@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Eco-Mario｜環保大冒險</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ================= 首頁區塊 ================= -->
+  <main class="landing-container" id="landingView">
+    <img src="12.jpg" class="bg-deco bg-deco-left-1" alt="tree-1" />
+    <img src="14.jpg" class="bg-deco bg-deco-left-2" alt="cactus" />
+    <img src="15.jpg" class="bg-deco bg-deco-right-1" alt="tree-2" />
+    <img src="12.jpg" class="bg-deco bg-deco-right-2" alt="tree-3" />
+
+    <header class="title-block">
+      <h1>Eco-Mario</h1>
+      <p class="subtitle">瑪利歐風冒險 — 選擇你的可愛角色，清理垃圾、越過廢氣煙囪！</p>
+    </header>
+
+    <section class="landing-card">
+      <h2>選擇角色與開始守護大地</h2>
+      
+      <!-- 角色選擇器 -->
+      <div class="character-select">
+        <label>選擇遊戲角色：</label>
+        <div class="char-options">
+          <button type="button" class="btn-char active" data-char="char17">👦 藍衣男孩 (17)</button>
+          <button type="button" class="btn-char" data-char="char18">👧 雙馬尾女孩 (18)</button>
+          <button type="button" class="btn-char" data-char="char19">👦 灰髮男孩 (19)</button>
+        </div>
+      </div>
+
+      <p class="description">
+        使用方向鍵或 A/D 鍵自由左右移動。<br />
+        <strong>按 1 次空白鍵</strong> 可跳過煙囪；<strong>連按 2 次（二段跳）</strong> 可直接跳過煙囪上方噴出的 CO₂ 毒氣！
+      </p>
+
+      <ul class="rules-list">
+        <li>方向鍵 ◄ ►：左右自由移動</li>
+        <li>⬆ / 空白鍵：跳躍（按一下過煙囪，連按兩下過煙霧）</li>
+        <li><span class="rule-recycle">綠色 ♻ 加生命垃圾</span>：紙箱、寶特瓶、鋁罐，碰到後<strong>增加 1 顆生命並得 40 分</strong>（最多 5 顆）。</li>
+        <li><span class="rule-ordinary">紅色 ⚠ 扣生命垃圾</span>：碎掉的雞蛋、破掉的手機、黑色垃圾、魚骨頭，碰到後<strong>扣 1 顆生命</strong>，請避開！</li>
+        <li>🧴 保溫瓶：吃到後生命值直接補滿 5 顆</li>
+        <li>🌈 累積 1000 分：天空變成晴朗藍色並出現彩虹</li>
+        <li>🏭 彩色煙囪與 💨 CO₂：注意避開廢氣，碰觸會死亡！</li>
+      </ul>
+
+      <button type="button" class="btn-start" id="enterGameBtn">Start 開始遊戲</button>
+    </section>
+  </main>
+
+
+  <!-- ================= 遊戲區塊 ================= -->
+  <div class="game-page hidden" id="gameView">
+    <header class="title-block">
+      <h1>Eco-Mario</h1>
+      <p>左右自由移動，清理路上垃圾，還給大地潔淨！</p>
+    </header>
+
+    <div class="game-stage" id="gameStage">
+      <!-- HUD -->
+      <div class="hud">
+        <div class="hud-eco">
+          <div class="hud-label">
+            <span>Eco 指數</span>
+            <strong id="ecoValue">50</strong>
+          </div>
+          <div class="eco-bar">
+            <div class="eco-bar-fill" id="ecoBarFill"></div>
+          </div>
+        </div>
+        <div class="hud-stats">
+          <div>得分 <strong id="scoreValue">0</strong></div>
+          <div>生命 <strong id="livesValue">♥♥♥</strong></div>
+          <div>時間 <strong id="timerValue">10:00</strong></div>
+        </div>
+      </div>
+
+      <div class="item-legend" aria-label="垃圾分類說明">
+        <div class="legend-group legend-danger"><strong>扣生命垃圾</strong><span>碎掉的雞蛋・破掉的手機・黑色垃圾・魚骨頭</span></div>
+        <div class="legend-group legend-recycle"><strong>加生命垃圾</strong><span>紙箱・寶特瓶・鋁罐</span></div>
+      </div>
+
+      <canvas id="gameCanvas" width="800" height="400"></canvas>
+
+      <!-- 遊戲結束 Overlay -->
+      <div class="overlay hidden" id="gameOverOverlay">
+        <div class="panel">
+          <h2>Game Over</h2>
+          <p id="gameOverText">污染吞噬了大地。</p>
+          <p class="final-stats">最終得分 <strong id="finalScore">0</strong></p>
+          <div class="leaderboard" id="leaderboard">
+            <h3>最高分排行榜</h3>
+            <ol id="leaderboardList"></ol>
+          </div>
+          <button type="button" class="btn-start" id="restartBtn">Restart 回首頁</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

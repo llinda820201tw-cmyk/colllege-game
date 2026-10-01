@@ -16,39 +16,31 @@
     <img src="12.jpg" class="bg-deco bg-deco-right-2" alt="tree-3" />
 
     <header class="title-block">
-      <h1>Eco-Mario</h1>
-      <p class="subtitle">瑪利歐風冒險 — 選擇你的可愛角色，清理垃圾、越過廢氣煙囪！</p>
+      <h1>Eco-Mario <span class="brand-caption">瑪利歐風冒險</span></h1>
+      <p class="subtitle">選擇可愛角色，守護大地！</p>
     </header>
 
     <section class="landing-card">
-      <h2>選擇角色與開始守護大地</h2>
-      
-      <!-- 角色選擇器 -->
+      <h2>選擇你的守護夥伴</h2>
       <div class="character-select">
-        <label>選擇遊戲角色：</label>
-        <div class="char-options">
-          <button type="button" class="btn-char active" data-char="char17">👦 藍衣男孩 (17)</button>
-          <button type="button" class="btn-char" data-char="char18">👧 雙馬尾女孩 (18)</button>
-          <button type="button" class="btn-char" data-char="char19">👦 灰髮男孩 (19)</button>
+        <div class="char-options" role="group" aria-label="選擇遊戲角色">
+          <button type="button" class="btn-char character-card active" data-char="char17" aria-pressed="true">
+            <span class="character-portrait"><img src="17.png" alt="藍衣男孩" /></span>
+            <strong>藍衣男孩</strong><span class="character-ability">🛡 守護護盾</span><span class="character-detail">抵擋傷害 4 秒</span><span class="character-key">技能按 <kbd>1</kbd></span>
+          </button>
+          <button type="button" class="btn-char character-card" data-char="char18" aria-pressed="false">
+            <span class="character-portrait"><img src="18.png" alt="雙馬尾女孩" /></span>
+            <strong>雙馬尾女孩</strong><span class="character-ability">🧲 回收磁力</span><span class="character-detail">吸附回收物 6 秒</span><span class="character-key">技能按 <kbd>2</kbd></span>
+          </button>
+          <button type="button" class="btn-char character-card" data-char="char19" aria-pressed="false">
+            <span class="character-portrait portrait-char19"><img src="19.png" alt="灰髮男孩" /></span>
+            <strong>灰髮男孩</strong><span class="character-ability">🌱 淨化脈衝</span><span class="character-detail">清除附近 CO₂</span><span class="character-key">技能按 <kbd>3</kbd></span>
+          </button>
         </div>
       </div>
-
-      <p class="description">
-        使用方向鍵或 A/D 鍵自由左右移動。<br />
-        <strong>按 1 次空白鍵</strong> 可跳過煙囪；<strong>連按 2 次（二段跳）</strong> 可直接跳過煙囪上方噴出的 CO₂ 毒氣！
-      </p>
-
-      <ul class="rules-list">
-        <li>方向鍵 ◄ ►：左右自由移動</li>
-        <li>⬆ / 空白鍵：跳躍（按一下過煙囪，連按兩下過煙霧）</li>
-        <li><span class="rule-recycle">綠色 ♻ 加生命垃圾</span>：紙箱、寶特瓶、鋁罐，碰到後<strong>增加 1 顆生命並得 40 分</strong>（最多 5 顆）。</li>
-        <li><span class="rule-ordinary">紅色 ⚠ 扣生命垃圾</span>：碎掉的雞蛋、破掉的手機、黑色垃圾、魚骨頭，碰到後<strong>扣 1 顆生命</strong>，請避開！</li>
-        <li>🧴 保溫瓶：吃到後生命值直接補滿 5 顆</li>
-        <li>🌈 累積 1000 分：天空變成晴朗藍色並出現彩虹</li>
-        <li>🏭 彩色煙囪與 💨 CO₂：注意避開廢氣，碰觸會死亡！</li>
-      </ul>
-
-      <button type="button" class="btn-start" id="enterGameBtn">Start 開始遊戲</button>
+      <button type="button" class="btn-start" id="enterGameBtn">🚀 開始遊戲 <span>START</span></button>
+      <p class="home-quick-tip">◄ ► 移動 · 空白鍵二段跳 · E 使用目前角色技能</p>
+      <button type="button" class="btn-rules" id="openRulesBtn" aria-haspopup="dialog">📖 遊戲規則與操作圖解</button>
     </section>
   </main>
 
@@ -58,8 +50,12 @@
     <header class="title-block">
       <h1>Eco-Mario</h1>
       <p>左右自由移動，清理路上垃圾，還給大地潔淨！</p>
+      <div class="scene-summary"><strong id="sceneName">🏙 繽紛城市</strong><span id="sceneHint">穿越街道，回收紙箱與鋁罐。下一站：600 分</span></div>
     </header>
 
+    <div class="game-broadcast">
+      <div class="event-card" id="eventCard" data-event="calm"><strong id="eventName" role="status" aria-live="polite">🌿 平靜時刻</strong><p id="eventDescription">準備迎接清潔隊補給！</p><span id="eventCountdown">8 秒後事件</span></div>
+    </div>
     <div class="game-stage" id="gameStage">
       <!-- HUD -->
       <div class="hud">
@@ -79,10 +75,7 @@
         </div>
       </div>
 
-      <div class="item-legend" aria-label="垃圾分類說明">
-        <div class="legend-group legend-danger"><strong>扣生命垃圾</strong><span>碎掉的雞蛋・破掉的手機・黑色垃圾・魚骨頭</span></div>
-        <div class="legend-group legend-recycle"><strong>加生命垃圾</strong><span>紙箱・寶特瓶・鋁罐</span></div>
-      </div>
+      <div class="opening-hint" id="openingHint"><strong>◄ ► 移動</strong><span>Space 跳躍 · 連按兩次二段跳</span><span id="openingSkillHint">1 / E 使用護盾</span></div>
 
       <canvas id="gameCanvas" width="800" height="400"></canvas>
 
@@ -100,7 +93,63 @@
         </div>
       </div>
     </div>
+    <div class="adventure-controls">
+      <button type="button" class="skill-button" id="skillBtn" aria-keyshortcuts="1 E" disabled><span id="skillName">🛡 守護護盾 [1]</span><strong id="skillStatus">按 1 / E · 使用技能</strong><span id="skillEffect" class="skill-effect">4 秒內抵擋傷害 · 冷卻 12 秒</span><span class="skill-progress" role="progressbar" id="skillProgress" aria-label="技能準備進度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><span id="skillProgressFill"></span></span></button>
+
+    </div>
+    <div class="touch-controls" aria-label="觸控遊戲操作">
+      <div class="touch-directions">
+        <button type="button" class="touch-button" id="touchLeftBtn" aria-label="向左移動">◀<span>左移</span></button>
+        <button type="button" class="touch-button" id="touchRightBtn" aria-label="向右移動">▶<span>右移</span></button>
+      </div>
+      <button type="button" class="touch-button touch-jump" id="touchJumpBtn" aria-label="跳躍，再按一次二段跳">↑<span>跳躍 / 二段跳</span></button>
+    </div>
+    <p class="touch-tip">按住方向按鈕移動，點跳躍；空中再點一次可二段跳。技能可點上方按鈕。</p>
   </div>
+
+  <dialog class="rules-dialog" id="rulesDialog" aria-labelledby="rulesTitle">
+    <div class="rules-dialog-header"><div><span>遊戲指南</span><h2 id="rulesTitle">📖 規則與操作圖解</h2></div><button type="button" id="closeRulesBtn" class="close-rules" aria-label="關閉遊戲說明" autofocus>✕</button></div>
+    <div class="rules-dialog-content">
+      <div class="control-diagrams"><div><kbd>←</kbd> <kbd>→</kbd><strong>左右移動</strong><span>也支援 A / D</span></div><div><kbd>Space</kbd> × 2<strong>跳躍 / 二段跳</strong><span>也支援 ↑ / W</span></div><div><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd><strong>目前角色的專屬技能</strong><span>也可按 E</span></div></div>
+      <h3 class="instructions-heading">🎮 操作與遊戲規則</h3>
+      <ul class="rules-list">
+        <li>方向鍵 ◄ ►：左右自由移動。手機可按住畫面下方的左、右按鈕，一邊移動一邊點跳躍。</li>
+        <li>⬆ / 空白鍵：跳躍。手機點「跳躍」按鈕，空中再點一次可二段跳；技能可直接點技能欄。手機橫向遊玩可看得更清楚。</li>
+        <li>✨ 技能快捷鍵：藍衣男孩按 <kbd>1</kbd>、雙馬尾女孩按 <kbd>2</kbd>、灰髮男孩按 <kbd>3</kbd>。上排數字鍵與數字鍵盤都支援；按 <kbd>E</kbd> 或點技能按鈕，也能使用目前角色的技能。</li>
+        <li><span class="rule-recycle">綠色 ♻ 加生命垃圾</span>：紙箱、寶特瓶、鋁罐，碰到後<strong>增加 1 顆生命並得 40 分</strong>（最多 5 顆）。</li>
+        <li><span class="rule-ordinary">紅色 ⚠ 扣生命垃圾</span>：碎掉的雞蛋、破掉的手機、黑色垃圾、魚骨頭，碰到後<strong>扣 1 顆生命</strong>，請避開！</li>
+        <li>🌈 累積 1000 分：柔和彩虹會在天空中逐漸浮現，進入森林後也會保留。</li>
+        <li>🏭 煙囪：碰到扣 1 顆生命。噴氣前會閃黃燈並顯示「即將噴氣！」約 1 秒，可先跳開或等待。</li>
+        <li>💨 CO₂：碰到扣 1 顆生命並短暫擊退，接著有 1 秒無敵時間，避免同一團煙連續扣血；護盾期間可安全通過。</li>
+        <li>煙囪難度逐關增加：城市每 6 秒噴氣 0.8 秒、河岸每 5 秒噴氣 1 秒、森林每 4 秒噴氣 1.2 秒。每輪都先預警 1 秒；霧霾事件會延長噴氣時間 0.8 秒。</li>
+      </ul>
+
+      <h3 class="instructions-heading">🗺 三段環保旅程</h3>
+      <div class="scene-gallery">
+        <article><img src="assets/scenes/city.png" alt="粉彩建築與綠化街道的城市場景" /><strong>🏙 繽紛城市</strong><span>0～599 分</span><p>回收紙箱與鋁罐，跳過街道煙囪。</p></article>
+        <article><img src="assets/scenes/river.png" alt="雪山木橋與清澈溪流的河岸場景" /><strong>🏞 山谷河岸</strong><span>600～1199 分</span><p>挑戰高低交錯石頭，用二段跳取得高處瓶罐；1000 分迎接彩虹。</p></article>
+        <article><img src="assets/scenes/forest.png" alt="陽光穿透綠色樹冠的森林場景" /><strong>🌳 陽光森林</strong><span>1200 分起</span><p>清理紙箱與瓶子，跳過樹樁；2000 分後走向終點旗。</p></article>
+      </div>
+      <p class="scene-instructions">依分數自動前進，背景柔和切換。河岸的小石頭可用單跳越過，高石柱需二段跳；有「低→高→低」、「低→高」與「高→低」組合，高處有回收物獎勵。組間留有落地空間。石頭與樹樁碰到也會扣生命；只有排氣煙囪會噴出 CO₂。</p>
+
+      <h3 class="instructions-heading">✨ 三個角色的專屬技能</h3>
+      <ul class="rules-list">
+        <li><strong>🛡 藍衣男孩｜<kbd>1</kbd> 守護護盾</strong><br />持續 4 秒，抵擋有害垃圾、煙囪碰撞與 CO₂；冷卻 12 秒。</li>
+        <li><strong>🧲 雙馬尾女孩｜<kbd>2</kbd> 回收磁力</strong><br />持續 6 秒，吸附附近 180 像素內的回收物與補給；冷卻 14 秒。</li>
+        <li><strong>🌱 灰髮男孩｜<kbd>3</kbd> 淨化脈衝</strong><br />立即清除附近 260 像素內的 CO₂，並增加 10 點 Eco；冷卻 16 秒。</li>
+        <li>每局使用所選角色的技能。「冷卻」是技能使用後，必須等待才能再次使用的時間，從發動時開始計算。例如護盾保護 4 秒，發動滿 12 秒後就能再次使用。下方技能欄會顯示生效與冷卻倒數。按住按鍵不會連續發動。</li>
+      </ul>
+
+      <h3 class="instructions-heading">🌦 隨機冒險事件</h3>
+      <ul class="rules-list">
+        <li><strong>🎁 清潔隊補給｜6 秒</strong><br />前方出現 4 件回收物，每件增加 20 分與 6 點 Eco。開場 8 秒固定出現第一波補給；事件結束後，尚未收集的補給仍留在地圖上。</li>
+        <li><strong>🍃 強風來襲｜8 秒</strong><br />風會將角色與煙霧推向右方。向右移動更快，向左移動會變慢；站著不動也會被風推動。</li>
+        <li><strong>🌫 霧霾警報｜8 秒</strong><br />畫面出現薄霧，煙囪噴氣更頻繁。利用二段跳、護盾或淨化技能避開 CO₂。</li>
+        <li>每次事件結束後，休息 14～22 秒，再隨機出現下一個不同事件；遊戲上方會顯示事件內容與剩餘時間。</li>
+      </ul>
+
+    </div>
+  </dialog>
 
   <script src="script.js"></script>
 </body>

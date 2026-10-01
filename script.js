@@ -14,7 +14,6 @@
   const RAINBOW_SCORE = 1000;
   const GAME_LIMIT_MS = 10 * 60 * 1000;
 
-  const stage = document.getElementById("gameStage");
   const ecoValueEl = document.getElementById("ecoValue");
   const ecoBarFill = document.getElementById("ecoBarFill");
   const scoreValueEl = document.getElementById("scoreValue");
@@ -32,8 +31,48 @@
   const SECOND_JUMP_VELOCITY = -13.0;
   const MOVE_SPEED = 4.8;
   const MAX_LIVES = 5;
+  const SMOKE_STAGES = [
+    { cycle: 6000, erupt: 800 },
+    { cycle: 5000, erupt: 1000 },
+    { cycle: 4000, erupt: 1200 }
+  ];
+  const SMOKE_WARNING_MS = 1000;
 
   let selectedCharacter = "char17";
+  const CHARACTERS = {
+    char17: { name: "🛡 守護護盾", key: "1", description: "4 秒內抵擋垃圾、煙囪與 CO₂", duration: 4000, cooldown: 12000, color: "#6bd9ff" },
+    char18: { name: "🧲 回收磁力", key: "2", description: "6 秒內吸附附近 180 像素的回收物與補給", duration: 6000, cooldown: 14000, color: "#ff83c1" },
+    char19: { name: "🌱 淨化脈衝", key: "3", description: "清除附近 260 像素的 CO₂，並增加 10 點 Eco", duration: 1000, cooldown: 16000, color: "#9df08f" }
+  };
+  const skillBtn = document.getElementById("skillBtn");
+  const skillNameEl = document.getElementById("skillName");
+  const skillStatusEl = document.getElementById("skillStatus");
+  const skillEffectEl = document.getElementById("skillEffect");
+  const skillProgress = document.getElementById("skillProgress");
+  const skillProgressFill = document.getElementById("skillProgressFill");
+  const openingHint = document.getElementById("openingHint");
+  const openingSkillHint = document.getElementById("openingSkillHint");
+  const rulesDialog = document.getElementById("rulesDialog");
+  const openRulesBtn = document.getElementById("openRulesBtn");
+  const closeRulesBtn = document.getElementById("closeRulesBtn");
+  const touchButtons = {
+    left: document.getElementById("touchLeftBtn"),
+    right: document.getElementById("touchRightBtn"),
+    jump: document.getElementById("touchJumpBtn")
+  };
+  const touchPointers = new Map();
+  const touchDevice = window.matchMedia?.("(any-pointer: coarse)")?.matches || false;
+  const eventCard = document.getElementById("eventCard");
+  const eventNameEl = document.getElementById("eventName");
+  const eventDescriptionEl = document.getElementById("eventDescription");
+  const eventCountdownEl = document.getElementById("eventCountdown");
+  const ability = { remaining: 0, cooldown: 0 };
+  const EVENTS = {
+    supply: { name: "🎁 清潔隊補給", description: "前方有 4 份補給，快去收集！", duration: 6000 },
+    wind: { name: "🍃 強風來襲", description: "順風推向右方；逆風移動會變慢。", duration: 8000 },
+    smog: { name: "🌫 霧霾警報", description: "煙囪更頻繁噴氣，善用跳躍和技能！", duration: 8000 }
+  };
+  const eventState = { type: null, remaining: 0, nextAt: 8000, lastType: null };
 
   const charImages = {
     char17: new Image(),
@@ -54,13 +93,16 @@
   const charCrop = {
     char19: { sx: 540, sy: 220, sw: 165, sh: 270 }
   };
-  const rainbowImage = new Image();
-  rainbowImage.src = "32.png";
-
-  const CHIMNEY_COLORS = [
-    "#E74C3C", "#E67E22", "#F1C40F", "#2ECC71", 
-    "#3498DB", "#ECF0F1", "#9B59B6", "#2C3E50"
+  const SCENES = [
+    { id: "city", name: "🏙 繽紛城市", threshold: 0, surface: 0.75, ground: "#c5c4b3", soil: "#94704e", obstacleChance: 0.48, recycleChance: 0.68, spacing: 220, safeItems: [25, 27], dangerItems: [22, 23], obstacle: "chimney", hint: "穿越街道，回收紙箱與鋁罐。", rainbowX: 0.52 },
+    { id: "river", name: "🏞 山谷河岸", threshold: 600, surface: 0.80, ground: "#a7ce67", soil: "#be864e", obstacleChance: 0.38, recycleChance: 0.75, spacing: 250, safeItems: [26, 27], dangerItems: [21, 28], obstacle: "rock", hint: "高低石頭交錯：小石頭單跳，高石柱二段跳！", rainbowX: 0.50 },
+    { id: "forest", name: "🌳 陽光森林", threshold: 1200, surface: 0.79, ground: "#91bd58", soil: "#896747", obstacleChance: 0.43, recycleChance: 0.80, spacing: 240, safeItems: [25, 26], dangerItems: [21, 23], obstacle: "stump", hint: "深入森林，跳過樹樁並清理留下的垃圾。", rainbowX: 0.51 }
   ];
+  SCENES.forEach(scene => { scene.image = new Image(); scene.image.src = `assets/scenes/${scene.id}.png`; });
+  const scenery = { index: 0, previous: 0, transition: 1200, rainbow: 0, riverGroups: 0, notice: 0 };
+  const sceneNameEl = document.getElementById("sceneName");
+  const sceneHintEl = document.getElementById("sceneHint");
+
 
   const STATE = { START: "start", PLAYING: "playing", GAMEOVER: "gameover" };
 
@@ -79,6 +121,8 @@
     vy: 0,
     jumpsLeft: 2,
     invincible: 0,
+    knockbackRemaining: 0,
+    knockbackVx: 0,
     facing: "right",
     animTimer: 0
   };
@@ -98,34 +142,186 @@
 
   charBtns.forEach(btn => {
     btn.addEventListener("click", () => {
-      charBtns.forEach(b => b.classList.remove("active"));
+      charBtns.forEach(b => { b.classList.remove("active"); b.setAttribute("aria-pressed", "false"); });
       btn.classList.add("active");
+      btn.setAttribute("aria-pressed", "true");
       selectedCharacter = btn.getAttribute("data-char");
+      updateAdventureHud();
     });
   });
 
   function clamp(val, min, max) { return Math.max(min, Math.min(max, val)); }
 
+  function refreshTouchButtons() {
+    Object.entries(touchButtons).forEach(([action, button]) => {
+      button.classList.toggle("touch-held", Array.from(touchPointers.values()).includes(action));
+      button.disabled = state !== STATE.PLAYING;
+    });
+  }
+
+  function clearTouchInput() {
+    touchPointers.clear();
+    refreshTouchButtons();
+  }
+
+  function directionHeld(action) {
+    return keys[action] || Array.from(touchPointers.values()).includes(action);
+  }
+
+  function getSmokePhase() {
+    const difficulty = SMOKE_STAGES[scenery.index];
+    const phase = gameTime % difficulty.cycle;
+    const eruptDuration = difficulty.erupt + (eventState.type === "smog" ? 800 : 0);
+    return phase < SMOKE_WARNING_MS ? "warning" : phase < SMOKE_WARNING_MS + eruptDuration ? "erupting" : "quiet";
+  }
+
+  function useSkill() {
+    if (state !== STATE.PLAYING || ability.cooldown > 0) return;
+    const skill = CHARACTERS[selectedCharacter];
+    ability.remaining = skill.duration;
+    ability.cooldown = skill.cooldown;
+    if (selectedCharacter === "char19") {
+      world.smokeParticles = world.smokeParticles.filter(p => Math.hypot(p.x - player.x - player.w / 2, p.y - player.y - player.h / 2) > 260);
+      setEcoScore(world.ecoScore + 10);
+    }
+    updateAdventureHud();
+  }
+
+  function updateAdventureHud() {
+    const skill = CHARACTERS[selectedCharacter];
+    skillNameEl.textContent = `${skill.name} [${skill.key}]`;
+    skillBtn.setAttribute("aria-keyshortcuts", `${skill.key} E`);
+    skillStatusEl.textContent = ability.remaining > 0
+      ? `生效中 · ${Math.ceil(ability.remaining / 1000)} 秒`
+      : ability.cooldown > 0 ? `冷卻 · ${Math.ceil(ability.cooldown / 1000)} 秒` : touchDevice ? "點我 · 使用技能" : `按 ${skill.key} / E · 使用技能`;
+    skillBtn.disabled = state !== STATE.PLAYING || ability.cooldown > 0;
+    skillBtn.classList.toggle("skill-active", ability.remaining > 0);
+    skillEffectEl.textContent = `${skill.description} · 冷卻 ${skill.cooldown / 1000} 秒`;
+    const readyPercent = Math.round((1 - ability.cooldown / skill.cooldown) * 100);
+    skillProgress.setAttribute("aria-valuenow", String(readyPercent));
+    skillProgressFill.style.width = `${readyPercent}%`;
+    openingHint.classList.toggle("hidden", state !== STATE.PLAYING || gameTime >= 3000);
+    openingSkillHint.textContent = touchDevice ? `點技能欄 · ${skill.name}` : `${skill.key} / E · ${skill.name}`;
+    refreshTouchButtons();
+    const event = EVENTS[eventState.type];
+    const scene = SCENES[scenery.index];
+    const sceneNotice = !event && scenery.notice > 0;
+    eventCard.dataset.event = eventState.type || (sceneNotice ? "scene" : "calm");
+    const broadcastName = event ? event.name : sceneNotice ? `新關卡 · ${scene.name}` : "🌿 平靜時刻";
+    if (eventNameEl.textContent !== broadcastName) eventNameEl.textContent = broadcastName;
+    eventDescriptionEl.textContent = event ? event.description : sceneNotice ? scene.hint : (eventState.lastType ? "趁現在清理垃圾，準備下一波冒險。" : "準備迎接清潔隊補給！");
+    eventCountdownEl.textContent = event ? `剩餘 ${Math.ceil(eventState.remaining / 1000)} 秒` : `${Math.max(0, Math.ceil((eventState.nextAt - gameTime) / 1000))} 秒後事件`;
+    sceneNameEl.textContent = scene.name;
+    sceneHintEl.textContent = scene.hint + (world.score >= RAINBOW_SCORE ? " 🌈 彩虹已出現！" : ` 下一站：${SCENES[scenery.index + 1] ? SCENES[scenery.index + 1].threshold + " 分" : "2000 分終點"}`);
+  }
+
+  function updateScenery(dt) {
+    const nextIndex = SCENES.reduce((index, scene, i) => world.score >= scene.threshold ? i : index, 0);
+    if (nextIndex !== scenery.index) {
+      scenery.previous = scenery.index;
+      scenery.index = nextIndex;
+      scenery.transition = 0;
+      scenery.notice = 3500;
+      // 只重建畫面外的前方物件，讓新場景使用自己的道具與障礙組合。
+      const boundary = world.cameraX + WIDTH + 80;
+      world.obstacles = world.obstacles.filter(o => o.x < boundary);
+      world.trashes = world.trashes.filter(t => t.x < boundary);
+      world.pickups = world.pickups.filter(p => p.x < boundary);
+      world.lastGeneratedX = boundary;
+      if (world.finishFlagX === null) generateMapSegment(player.x + 1200);
+    }
+    scenery.transition = Math.min(1200, scenery.transition + dt);
+    scenery.notice = Math.max(0, scenery.notice - dt);
+    if (world.score >= RAINBOW_SCORE) scenery.rainbow = Math.min(1, scenery.rainbow + dt / 1600);
+  }
+
+  function startEvent(type) {
+    eventState.type = type;
+    eventState.lastType = type;
+    eventState.remaining = EVENTS[type].duration;
+    if (type === "supply") {
+      for (let i = 0; i < 4; i++) {
+        world.pickups.push({ x: player.x + 150 + i * 85, y: GROUND_Y - 70, r: 30,
+          type: "recycle", item: ["bottle", "can", "paper"][i % 3] });
+      }
+    }
+  }
+
+  function updateAdventure(dt) {
+    ability.remaining = Math.max(0, ability.remaining - dt);
+    ability.cooldown = Math.max(0, ability.cooldown - dt);
+    if (eventState.type) {
+      eventState.remaining = Math.max(0, eventState.remaining - dt);
+      if (eventState.remaining === 0) {
+        eventState.type = null;
+        eventState.nextAt = gameTime + 14000 + Math.random() * 8000;
+      }
+    } else if (gameTime >= eventState.nextAt) {
+      const options = Object.keys(EVENTS).filter(type => type !== eventState.lastType);
+      startEvent(eventState.lastType === null ? "supply" : options[Math.floor(Math.random() * options.length)]);
+    }
+    if (selectedCharacter === "char18" && ability.remaining > 0) {
+      const targetX = player.x + player.w / 2;
+      const targetY = player.y + player.h / 2;
+      const pull = Math.min(1, dt * 0.009);
+      const attract = (item, offset) => {
+        const dx = targetX - item.x - offset;
+        const dy = targetY - item.y - offset;
+        if (Math.hypot(dx, dy) <= 180) { item.x += dx * pull; item.y += dy * pull; }
+      };
+      world.trashes.forEach(t => { if (t.alive && t.type === "recyclable") attract(t, 12); });
+      world.pickups.forEach(p => attract(p, 0));
+    }
+    updateAdventureHud();
+  }
+
+  function generateRiverObstacles(x) {
+    const patterns = [
+      [{ offset: 0, h: 48, w: 44 }, { offset: 155, h: 180, w: 52 }, { offset: 450, h: 66, w: 48 }],
+      [{ offset: 0, h: 64, w: 48 }, { offset: 175, h: 190, w: 56 }],
+      [{ offset: 0, h: 176, w: 52 }, { offset: 190, h: 52, w: 44 }]
+    ];
+    // 第一組固定由低到高，後續再交替不同組合；組間留出落地空間。
+    const pattern = scenery.riverGroups === 0 ? patterns[0] : patterns[Math.floor(Math.random() * patterns.length)];
+    pattern.forEach(part => {
+      world.obstacles.push({ x: x + part.offset, y: GROUND_Y - part.h, w: part.w,
+        h: part.h, kind: "rock", color: "#95a8a2", hasCO2: false });
+      if (part.h >= 170) world.pickups.push({ x: x + part.offset + part.w / 2,
+        y: GROUND_Y - part.h - 42, r: 30, type: "recycle", item: "bottle" });
+    });
+    const last = pattern[pattern.length - 1];
+    world.lastGeneratedX = x + last.offset + last.w + 120;
+    scenery.riverGroups += 1;
+  }
+
   // 💡 動態在地圖前方生成新的障礙物與道具
   function generateMapSegment(toX) {
+    const scene = SCENES[scenery.index];
     while (world.lastGeneratedX < toX) {
-      world.lastGeneratedX += 220 + Math.random() * 180;
+      world.lastGeneratedX += scene.spacing + Math.random() * 180;
       const x = world.lastGeneratedX;
       const type = Math.random();
 
+      if (scene.id === "river" && (scenery.riverGroups === 0 || type < 0.5)) {
+        generateRiverObstacles(x);
+        continue;
+      }
+
       // 分數越高，煙囪出現的機率與密度可以動態調整
-      if (type < 0.5) {
+      if (type < scene.obstacleChance) {
         const h = 55 + Math.random() * 40;
+        const kind = scene.obstacle === "chimney" || Math.random() < 0.25 ? "chimney" : scene.obstacle;
         world.obstacles.push({
           x: x,
           y: GROUND_Y - h,
           w: 44,
           h: h,
-          color: CHIMNEY_COLORS[Math.floor(Math.random() * CHIMNEY_COLORS.length)],
-          hasCO2: Math.random() < 0.7
+          kind,
+          color: ["#ad8170", "#95a8a2", "#bbaa86"][Math.floor(Math.random() * 3)],
+          hasCO2: kind === "chimney" && Math.random() < 0.7
         });
       } else if (type < 0.8) {
-        const isRecycle = Math.random() < 0.7;
+        const isRecycle = Math.random() < scene.recycleChance;
         world.trashes.push({
           x: x,
           y: GROUND_Y - 24,
@@ -134,8 +330,8 @@
           // 紅色編號固定扣生命，綠色編號固定加生命。
           type: isRecycle ? "recyclable" : "ordinary",
           imageId: isRecycle
-            ? [25, 26, 27][Math.floor(Math.random() * 3)]
-            : [21, 22, 23, 28][Math.floor(Math.random() * 4)],
+            ? scene.safeItems[Math.floor(Math.random() * scene.safeItems.length)]
+            : scene.dangerItems[Math.floor(Math.random() * scene.dangerItems.length)],
           alive: true
         });
       } else {
@@ -143,7 +339,7 @@
           x: x,
           y: GROUND_Y - 100 - Math.random() * 50,
           r: 30,
-          type: Math.random() < 0.35 ? "thermos" : "recycle",
+          type: "recycle",
           item: ["bottle", "can", "paper"][Math.floor(Math.random() * 3)]
         });
       }
@@ -158,13 +354,22 @@
     world.lastGeneratedX = 400;
     world.finishFlagX = null;
     gameTime = 0;
+    Object.assign(scenery, { index: 0, previous: 0, transition: 1200, rainbow: 0, riverGroups: 0, notice: 0 });
     player.x = 100;
     player.y = GROUND_Y - player.h;
     player.vx = 0;
     player.vy = 0;
     player.jumpsLeft = 2;
     player.invincible = 0;
+    player.knockbackRemaining = 0;
+    player.knockbackVx = 0;
     player.animTimer = 0;
+    keys.left = false;
+    keys.right = false;
+    clearTouchInput();
+    ability.remaining = 0;
+    ability.cooldown = 0;
+    Object.assign(eventState, { type: null, remaining: 0, nextAt: 8000, lastType: null });
     world.obstacles = [];
     world.trashes = [];
     world.pickups = [];
@@ -174,6 +379,7 @@
     generateMapSegment(1500);
     updateEcoVisuals();
     updateHud();
+    updateAdventureHud();
   }
 
   function setEcoScore(next) {
@@ -183,10 +389,10 @@
 
   function updateEcoVisuals() {
     const t = world.ecoScore / 100;
-    const grayscale = (1 - t) * (1 - t) * 100;
-    const saturate = 0.45 + t * 1.05;
-    const brightness = 0.68 + t * 0.42;
-    stage.style.filter = `grayscale(${grayscale}%) saturate(${saturate}) brightness(${brightness})`;
+    const grayscale = (1 - t) * 22;
+    const saturate = 0.8 + t * 0.3;
+    const brightness = 0.9 + t * 0.1;
+    canvas.style.filter = `grayscale(${grayscale}%) saturate(${saturate}) brightness(${brightness})`;
 
     ecoValueEl.textContent = Math.round(world.ecoScore);
     ecoBarFill.style.width = `${world.ecoScore}%`;
@@ -300,21 +506,33 @@
   }
 
   function drawRainbow(centerX, topY) {
-    const colors = ["#ef476f", "#f78c6b", "#ffd166", "#06d6a0", "#118ab2", "#7b61ff"];
+    const colors = ["#ee9fae", "#f4be92", "#f5dfa0", "#a8dba1", "#9ed3e7", "#c5b8e4"];
+    ctx.save();
+    ctx.globalAlpha = scenery.rainbow * 0.7;
+    ctx.shadowColor = "rgba(255, 255, 232, 0.5)";
+    ctx.shadowBlur = 8;
     colors.forEach((color, index) => {
       ctx.strokeStyle = color;
-      ctx.lineWidth = 7;
+      ctx.lineWidth = 6;
       ctx.beginPath();
-      ctx.arc(centerX, topY + 55, 105 - index * 9, Math.PI, Math.PI * 2);
+      ctx.arc(centerX, topY + 100, 100 - index * 6, Math.PI, Math.PI * 2);
       ctx.stroke();
     });
+    ctx.restore();
   }
 
-  function hitPlayer() {
-    if (player.invincible > 0) return;
+  function hitPlayer(source = null, sourceX = player.x) {
+    if (state !== STATE.PLAYING || player.invincible > 0 || (selectedCharacter === "char17" && ability.remaining > 0)) return;
     world.lives -= 1;
     setEcoScore(world.ecoScore - 12);
     player.invincible = 1000;
+    if (source === "smoke") {
+      const center = player.x + player.w / 2;
+      const direction = center === sourceX ? (player.facing === "right" ? -1 : 1) : Math.sign(center - sourceX);
+      player.knockbackVx = direction * 3.4;
+      player.knockbackRemaining = 180;
+      player.vy = -5;
+    }
     updateHud();
     if (world.lives <= 0) {
       endGame("生命值耗盡！");
@@ -324,6 +542,10 @@
   function endGame(reason) {
     if (state === STATE.GAMEOVER) return;
     state = STATE.GAMEOVER;
+    clearTouchInput();
+    keys.left = false;
+    keys.right = false;
+    updateAdventureHud();
     gameOverText.textContent = reason;
     finalScoreEl.textContent = Math.floor(world.score);
     saveScore(world.score);
@@ -333,16 +555,22 @@
   }
 
   function startGame() {
+    if (rulesDialog.open) rulesDialog.close();
     landingView.classList.add("hidden");
     gameView.classList.remove("hidden");
     resetWorld();
     state = STATE.PLAYING;
+    updateAdventureHud();
     gameOverOverlay.classList.add("hidden");
   }
 
   function goToHome() {
     if (homeTimer) clearTimeout(homeTimer);
     state = STATE.START;
+    clearTouchInput();
+    keys.left = false;
+    keys.right = false;
+    updateAdventureHud();
     gameOverOverlay.classList.add("hidden");
     gameView.classList.add("hidden");
     landingView.classList.remove("hidden");
@@ -356,10 +584,18 @@
       endGame("時間到！");
       return;
     }
+    updateScenery(dt);
+    updateAdventure(dt);
+    updateHud();
 
-    if (keys.left) { player.vx = -MOVE_SPEED; player.facing = "left"; }
-    else if (keys.right) { player.vx = MOVE_SPEED; player.facing = "right"; }
+    if (directionHeld("left")) { player.vx = -MOVE_SPEED; player.facing = "left"; }
+    else if (directionHeld("right")) { player.vx = MOVE_SPEED; player.facing = "right"; }
     else { player.vx = 0; }
+    if (eventState.type === "wind") player.vx += 1.4;
+    if (player.knockbackRemaining > 0) {
+      player.vx = player.knockbackVx;
+      player.knockbackRemaining = Math.max(0, player.knockbackRemaining - dt);
+    }
 
     player.x += player.vx;
     player.x = Math.max(0, player.x); // 左邊不能超出 0，右邊可無限延伸
@@ -377,6 +613,7 @@
     // 💡 碰觸到終點旗桿通關
     if (world.finishFlagX !== null && player.x >= world.finishFlagX) {
       endGame(`恭喜高分通關！成功達到 ${WIN_SCORE} 分拯救地球！`);
+      return;
     }
 
     player.vy += GRAVITY;
@@ -399,11 +636,10 @@
 
     world.cameraX = Math.max(0, player.x - 200);
 
-    const cycleTime = gameTime % 4000;
-    const isErupting = cycleTime < 1000;
+    const isErupting = getSmokePhase() === "erupting";
 
     world.obstacles.forEach((o) => {
-      if (o.hasCO2 && isErupting && Math.random() < 0.3) {
+      if (o.hasCO2 && o.x > world.cameraX - 80 && o.x < world.cameraX + WIDTH + 80 && isErupting && Math.random() < 0.3) {
         world.smokeParticles.push({
           x: o.x + o.w / 2 + (Math.random() * 10 - 5),
           y: o.y,
@@ -416,7 +652,7 @@
     });
 
     world.smokeParticles.forEach((p) => {
-      p.x += p.vx;
+      p.x += p.vx + (eventState.type === "wind" ? 1.8 : 0);
       p.y += p.vy;
       p.r += 0.25;
       p.alpha -= 0.012;
@@ -426,7 +662,7 @@
     const pRect = { x: player.x + 8, y: player.y + 8, w: player.w - 16, h: player.h - 16 };
 
     world.trashes.forEach((t) => {
-      if (!t.alive) return;
+      if (!t.alive || state !== STATE.PLAYING) return;
       if (rectsOverlap(pRect, t)) {
         t.alive = false;
         if (t.type === "recyclable") {
@@ -442,28 +678,25 @@
     });
 
     world.obstacles.forEach((o) => {
-      if (rectsOverlap(pRect, o)) hitPlayer();
+      if (state === STATE.PLAYING && rectsOverlap(pRect, o)) hitPlayer();
     });
+    if (state !== STATE.PLAYING) return;
 
     world.smokeParticles.forEach((p) => {
       const dx = (player.x + player.w/2) - p.x;
       const dy = (player.y + player.h/2) - p.y;
-      if (Math.sqrt(dx*dx + dy*dy) < p.r + 15 && player.invincible <= 0) {
-        endGame("不幸吸入 CO2 廢氣窒息！");
+      if (Math.sqrt(dx*dx + dy*dy) < p.r + 15 && player.invincible <= 0 && !(selectedCharacter === "char17" && ability.remaining > 0)) {
+        hitPlayer("smoke", p.x);
       }
     });
+    if (state !== STATE.PLAYING) return;
 
     world.pickups = world.pickups.filter((p) => {
       const dx = (player.x + player.w/2) - p.x;
       const dy = (player.y + player.h/2) - p.y;
       if (Math.sqrt(dx*dx + dy*dy) < p.r + 20) {
-        if (p.type === "thermos") {
-          world.lives = MAX_LIVES;
-          world.score += 50;
-        } else {
-          setEcoScore(world.ecoScore + 6);
-          world.score += 20;
-        }
+        setEcoScore(world.ecoScore + 6);
+        world.score += 20;
         updateHud();
         return false;
       }
@@ -526,27 +759,94 @@
   ctx.restore();
 }
 
+  function drawScene(scene, alpha = 1) {
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    const img = scene.image;
+    if (img.complete && img.naturalWidth > 0) {
+      const sourceGround = Math.round(img.naturalHeight * scene.surface);
+      // 對齊每張圖片的地面與碰撞地板，避免角色腳下漂浮或陷入背景。
+      ctx.drawImage(img, 0, 0, img.naturalWidth, sourceGround, world.cameraX, 0, WIDTH, GROUND_Y);
+      ctx.drawImage(img, 0, sourceGround, img.naturalWidth, img.naturalHeight - sourceGround, world.cameraX, GROUND_Y, WIDTH, HEIGHT - GROUND_Y);
+    } else {
+      ctx.fillStyle = "#c9e9e5";
+      ctx.fillRect(world.cameraX, 0, WIDTH, GROUND_Y);
+      ctx.fillStyle = scene.soil;
+      ctx.fillRect(world.cameraX, GROUND_Y, WIDTH, HEIGHT - GROUND_Y);
+    }
+    ctx.restore();
+  }
+
+  function drawGroundShadow(x, y, width, color = "#415540") {
+    ctx.save();
+    ctx.globalAlpha = Math.max(0.04, 0.19 - Math.abs(GROUND_Y - y) / 1400);
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.ellipse(x, GROUND_Y + 2, width, 4, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawObstacle(o) {
+    drawGroundShadow(o.x + o.w / 2, GROUND_Y, o.w * 0.6);
+    ctx.save();
+    ctx.lineWidth = 2;
+    if (o.kind === "rock") {
+      const stone = ctx.createLinearGradient(o.x, o.y, o.x + o.w, GROUND_Y);
+      stone.addColorStop(0, "#bdc8bd"); stone.addColorStop(1, "#7f9487");
+      ctx.fillStyle = stone; ctx.strokeStyle = "#697e72";
+      ctx.beginPath(); ctx.moveTo(o.x, GROUND_Y); ctx.lineTo(o.x + 2, o.y + o.h * 0.35);
+      ctx.quadraticCurveTo(o.x + o.w * 0.4, o.y - 2, o.x + o.w * 0.7, o.y + 5);
+      ctx.lineTo(o.x + o.w, GROUND_Y); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = "rgba(255,255,239,0.6)";
+      ctx.beginPath(); ctx.moveTo(o.x + 9, o.y + o.h * 0.4); ctx.lineTo(o.x + o.w * 0.55, o.y + 12); ctx.stroke();
+    } else if (o.kind === "stump") {
+      ctx.fillStyle = "#a07953"; ctx.strokeStyle = "#71543d";
+      ctx.beginPath(); ctx.roundRect(o.x, o.y + 5, o.w, o.h - 5, 6); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#dfc898";
+      ctx.beginPath(); ctx.ellipse(o.x + o.w / 2, o.y + 7, o.w / 2, 7, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(o.x + o.w / 2, o.y + 7, o.w / 3, 3, 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.strokeStyle = "#846140";
+      for (let i = 1; i < 4; i++) { ctx.beginPath(); ctx.moveTo(o.x + i * 11, o.y + 20); ctx.lineTo(o.x + i * 10, GROUND_Y - 7); ctx.stroke(); }
+    } else {
+      const masonry = ctx.createLinearGradient(o.x, 0, o.x + o.w, 0);
+      masonry.addColorStop(0, o.color); masonry.addColorStop(0.5, "#d0bfa6"); masonry.addColorStop(1, o.color);
+      ctx.fillStyle = masonry; ctx.strokeStyle = "#766d61";
+      ctx.beginPath(); ctx.roundRect(o.x, o.y, o.w, o.h, 4); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = "rgba(91,79,67,0.25)";
+      for (let y = o.y + 20; y < GROUND_Y; y += 18) { ctx.beginPath(); ctx.moveTo(o.x + 2, y); ctx.lineTo(o.x + o.w - 2, y); ctx.stroke(); }
+      ctx.fillStyle = "#706e65"; ctx.beginPath(); ctx.roundRect(o.x - 2, o.y, o.w + 4, 8, 3); ctx.fill();
+      if (o.hasCO2) {
+        const phase = getSmokePhase();
+        ctx.fillStyle = phase === "warning" ? (Math.floor(gameTime / 150) % 2 ? "#ffd36a" : "#c69540") : phase === "erupting" ? "#d57967" : "#adc5a0";
+        ctx.beginPath(); ctx.arc(o.x + o.w / 2, o.y + 17, 4, 0, Math.PI * 2); ctx.fill();
+        if (phase === "warning") {
+          ctx.fillStyle = "#fff5d9";
+          ctx.beginPath(); ctx.roundRect(o.x + o.w / 2 - 35, o.y - 23, 70, 18, 6); ctx.fill();
+          ctx.fillStyle = "#8b5e24"; ctx.font = "bold 10px sans-serif"; ctx.textAlign = "center";
+          ctx.fillText("即將噴氣！", o.x + o.w / 2, o.y - 10);
+        }
+      }
+    }
+    ctx.restore();
+  }
+
   function draw() {
     ctx.clearRect(0, 0, WIDTH, HEIGHT);
     ctx.save();
     ctx.translate(-world.cameraX, 0);
 
-    const cleanProgress = clamp(world.score / RAINBOW_SCORE, 0, 1);
-    const sky = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
-    sky.addColorStop(0, `rgb(${Math.round(30 + cleanProgress * 95)}, ${Math.round(42 + cleanProgress * 145)}, ${Math.round(62 + cleanProgress * 175)})`);
-    sky.addColorStop(1, `rgb(${Math.round(74 + cleanProgress * 92)}, ${Math.round(82 + cleanProgress * 125)}, ${Math.round(88 + cleanProgress * 100)})`);
-    ctx.fillStyle = sky;
-    ctx.fillRect(world.cameraX, 0, WIDTH, HEIGHT);
+    const scene = SCENES[scenery.index];
+    if (scenery.transition < 1200) {
+      drawScene(SCENES[scenery.previous]);
+      drawScene(scene, scenery.transition / 1200);
+    } else drawScene(scene);
+    if (scenery.rainbow > 0) drawRainbow(world.cameraX + WIDTH * scene.rainbowX, 98);
 
-    if (world.score >= RAINBOW_SCORE) {
-      if (rainbowImage.complete && rainbowImage.naturalWidth !== 0) {
-        ctx.drawImage(rainbowImage, world.cameraX + WIDTH / 2 - 125, 45, 250, 170);
-      }
+    // 小幅地面紋理隨鏡頭移動，背景保持開闊的天空供彩虹呈現。
+    ctx.save(); ctx.globalAlpha = 0.18; ctx.fillStyle = scene.ground;
+    for (let x = Math.floor(world.cameraX / 75) * 75; x < world.cameraX + WIDTH; x += 75) {
+      ctx.beginPath(); ctx.ellipse(x + 30, GROUND_Y + 14, 9, 2, 0, 0, Math.PI * 2); ctx.fill();
     }
-
-    // 💡 地面隨鏡頭位置無限動態繪製
-    ctx.fillStyle = "#556B2F";
-    ctx.fillRect(world.cameraX, GROUND_Y, WIDTH + 200, HEIGHT - GROUND_Y);
+    ctx.restore();
 
     // 💡 當達到設定高分時，才繪製終點旗桿
     if (world.finishFlagX !== null) {
@@ -560,15 +860,7 @@
       ctx.fill();
     }
 
-    world.obstacles.forEach((o) => {
-      ctx.fillStyle = o.color;
-      ctx.fillRect(o.x, o.y, o.w, o.h);
-      ctx.strokeStyle = "#1A252F";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(o.x, o.y, o.w, o.h);
-      ctx.fillStyle = "#2C3E50";
-      ctx.fillRect(o.x - 2, o.y, o.w + 4, 8);
-    });
+    world.obstacles.forEach(drawObstacle);
 
     world.smokeParticles.forEach((p) => {
       ctx.fillStyle = `rgba(80, 80, 80, ${p.alpha})`;
@@ -584,38 +876,58 @@
       if (!t.alive) return;
       const img = itemImages[t.imageId];
       if (!img || !img.complete || img.naturalWidth === 0) return;
+      drawGroundShadow(t.x + 12, t.y + 24, 18, t.type === "recyclable" ? "#3b7452" : "#96554c");
+      ctx.save(); ctx.shadowColor = "rgba(65,64,42,0.22)"; ctx.shadowBlur = 3; ctx.shadowOffsetY = 2;
       if (t.imageId === 22) {
         // 22.png 右側有白線，只繪製透明圖案所在區域。
-        ctx.drawImage(img, 0, 0, img.naturalWidth * 0.82, img.naturalHeight, t.x - 36, t.y - 36, 72, 72);
+        ctx.drawImage(img, 0, 0, img.naturalWidth * 0.82, img.naturalHeight, t.x - 16, t.y - 32, 56, 56);
       } else {
-        ctx.drawImage(img, t.x - 36, t.y - 36, 72, 72);
+        ctx.drawImage(img, t.x - 16, t.y - 32, 56, 56);
       }
+      ctx.restore();
     });
 
     world.pickups.forEach((p) => {
-      if (p.type === "thermos") {
-        ctx.fillStyle = "#3498DB";
-        ctx.beginPath();
-        ctx.roundRect(p.x - 18, p.y - 30, 36, 60, 9);
-        ctx.fill();
-        ctx.strokeStyle = "#145a86";
-        ctx.lineWidth = 3;
-        ctx.stroke();
-        ctx.fillStyle = "#dff6ff";
-        ctx.fillRect(p.x - 11, p.y - 9, 22, 18);
-        ctx.fillStyle = "#E74C3C";
-        ctx.font = "bold 15px sans-serif";
-        ctx.fillText("♥♥", p.x - 13, p.y + 5);
-      } else {
+      drawGroundShadow(p.x, p.y, 15);
         const recycleImageId = { bottle: 26, can: 27, paper: 25 }[p.item];
         const img = itemImages[recycleImageId];
         if (img && img.complete && img.naturalWidth !== 0) {
           ctx.drawImage(img, p.x - 36, p.y - 36, 72, 72);
         }
-      }
     });
 
+    drawGroundShadow(player.x + player.w / 2, player.y + player.h, 23);
     drawPlayer();
+
+    if (ability.remaining > 0) {
+      const skill = CHARACTERS[selectedCharacter];
+      const centerX = player.x + player.w / 2;
+      const centerY = player.y + player.h / 2;
+      const radius = selectedCharacter === "char17" ? 55 : selectedCharacter === "char18" ? 180 : 35 + (1 - ability.remaining / skill.duration) * 225;
+      ctx.save();
+      ctx.strokeStyle = skill.color;
+      ctx.fillStyle = skill.color;
+      ctx.globalAlpha = 0.12;
+      ctx.beginPath(); ctx.arc(centerX, centerY, radius, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = selectedCharacter === "char19" ? ability.remaining / skill.duration : 0.75;
+      ctx.lineWidth = 3;
+      if (selectedCharacter === "char18") ctx.setLineDash([8, 8]);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    if (eventState.type === "smog") {
+      ctx.fillStyle = "rgba(190, 195, 186, 0.16)";
+      ctx.fillRect(world.cameraX, 0, WIDTH, GROUND_Y);
+    } else if (eventState.type === "wind") {
+      ctx.strokeStyle = "rgba(220, 255, 231, 0.6)";
+      ctx.lineWidth = 2;
+      for (let i = 0; i < 10; i++) {
+        const x = world.cameraX + ((gameTime * 0.2 + i * 89) % (WIDTH + 80)) - 40;
+        const y = 135 + (i * 37 % 160);
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 34, y - 3); ctx.stroke();
+      }
+    }
 
     ctx.restore();
   }
@@ -630,11 +942,17 @@
   }
 
   window.addEventListener("keydown", (e) => {
+    if (rulesDialog.open) return;
+    if (state !== STATE.PLAYING) return;
+    const skillKey = CHARACTERS[selectedCharacter].key;
+    const isSkillKey = e.code === "KeyE" || e.code === `Digit${skillKey}` || e.code === `Numpad${skillKey}`;
+    if (["ArrowLeft", "ArrowRight", "ArrowUp", "Space"].includes(e.code) || isSkillKey) e.preventDefault();
+    if (isSkillKey && !e.repeat) useSkill();
     if (e.code === "ArrowLeft" || e.code === "KeyA") keys.left = true;
     if (e.code === "ArrowRight" || e.code === "KeyD") keys.right = true;
     if (e.code === "Space" || e.code === "ArrowUp" || e.code === "KeyW") {
       e.preventDefault();
-      jump();
+      if (!e.repeat) jump();
     }
   });
 
@@ -645,6 +963,53 @@
 
   if (enterGameBtn) enterGameBtn.addEventListener("click", startGame);
   if (restartBtn) restartBtn.addEventListener("click", goToHome);
+  skillBtn.addEventListener("click", useSkill);
+  skillBtn.addEventListener("pointerdown", (e) => {
+    if (e.pointerType === "touch" || e.pointerType === "pen") {
+      e.preventDefault();
+      useSkill();
+    }
+  });
+  Object.entries(touchButtons).forEach(([action, button]) => {
+    button.addEventListener("pointerdown", (e) => {
+      if (state !== STATE.PLAYING || (e.pointerType === "mouse" && e.button !== 0)) return;
+      e.preventDefault();
+      button.setPointerCapture(e.pointerId);
+      touchPointers.set(e.pointerId, action);
+      if (action === "jump") jump();
+      refreshTouchButtons();
+    });
+    const release = (e) => {
+      touchPointers.delete(e.pointerId);
+      refreshTouchButtons();
+    };
+    button.addEventListener("pointerup", release);
+    button.addEventListener("pointercancel", release);
+    button.addEventListener("lostpointercapture", release);
+    button.addEventListener("contextmenu", e => e.preventDefault());
+    button.addEventListener("click", e => { if (action === "jump" && e.detail === 0) jump(); });
+  });
+  if (touchDevice) {
+    document.querySelector(".opening-hint strong").textContent = "按住 ◀ ▶ 移動";
+    document.querySelector(".opening-hint span").textContent = "點跳躍 · 空中再點一次二段跳";
+    document.querySelector(".home-quick-tip").textContent = "手機支援觸控移動、二段跳與技能 · 建議橫向遊玩";
+  }
+  openRulesBtn.addEventListener("click", () => {
+    rulesDialog.showModal();
+    document.body.classList.add("rules-open");
+  });
+  closeRulesBtn.addEventListener("click", () => rulesDialog.close());
+  rulesDialog.addEventListener("close", () => {
+    document.body.classList.remove("rules-open");
+    if (state === STATE.START) openRulesBtn.focus();
+  });
+  rulesDialog.addEventListener("click", (e) => {
+    const bounds = rulesDialog.getBoundingClientRect();
+    if (e.target === rulesDialog && (e.clientX < bounds.left || e.clientX > bounds.right || e.clientY < bounds.top || e.clientY > bounds.bottom)) rulesDialog.close();
+  });
+  const releaseInputs = () => { keys.left = false; keys.right = false; clearTouchInput(); };
+  window.addEventListener("blur", releaseInputs);
+  document.addEventListener("visibilitychange", () => { if (document.hidden) releaseInputs(); });
 
   resetWorld();
   requestAnimationFrame(loop);

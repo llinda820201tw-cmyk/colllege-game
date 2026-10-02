@@ -601,16 +601,20 @@
     gameOverOverlay.classList.add("hidden");
   }
 
-  function goToHome() {
+  async function goToHome() {
     if (homeTimer) clearTimeout(homeTimer);
     state = STATE.START;
     clearTouchInput();
     keys.left = false;
     keys.right = false;
     updateAdventureHud();
+    if (document.fullscreenElement && document.exitFullscreen) {
+      try { await document.exitFullscreen(); } catch { /* 返回首頁仍可繼續執行。 */ }
+    }
     gameOverOverlay.classList.add("hidden");
     gameView.classList.add("hidden");
     landingView.classList.remove("hidden");
+    window.scrollTo(0, 0);
   }
 
   function update(dt) {

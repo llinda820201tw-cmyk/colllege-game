@@ -1,4 +1,5 @@
 android/build/
 android/private/
 downloads/*.apk
+!downloads/Eco-Mario-1.0.1.apk
 downloads/*.idsig

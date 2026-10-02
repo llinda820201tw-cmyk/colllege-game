@@ -7,12 +7,16 @@ $androidJar = Join-Path $sdkRoot 'platforms/android-36.1/android.jar'
 $buildDir = Join-Path $PSScriptRoot 'build'
 $privateDir = Join-Path $PSScriptRoot 'private'
 $outputDir = Join-Path $projectRoot 'downloads'
+$assetPackage = Join-Path $buildDir ('package-' + [Guid]::NewGuid().ToString('N'))
+$assetDir = Join-Path $assetPackage 'assets'
 foreach ($dir in @($buildDir, "$buildDir/assets", "$buildDir/classes", "$buildDir/dex", $privateDir, $outputDir)) { New-Item -ItemType Directory -Force -Path $dir | Out-Null }
 function Run-Tool($tool, $toolArgs) { & $tool @toolArgs; if ($LASTEXITCODE -ne 0) { throw "Build failed: $tool" } }
-Get-ChildItem -LiteralPath $projectRoot -File | Where-Object { $_.Extension -in @('.html','.css','.js','.png','.jpg') } | Copy-Item -Destination "$buildDir/assets"
-Copy-Item -LiteralPath "$projectRoot/assets" -Destination "$buildDir/assets" -Recurse -Force
+New-Item -ItemType Directory -Force -Path "$assetDir/assets" | Out-Null
+Get-ChildItem -LiteralPath $projectRoot -File | Where-Object { $_.Extension -in @('.html','.css','.js','.png','.jpg') } | Copy-Item -Destination $assetDir
+Get-ChildItem -LiteralPath "$projectRoot/assets" | Copy-Item -Destination "$assetDir/assets" -Recurse -Force
 Run-Tool "$buildTools/aapt2.exe" @('compile','--dir',"$PSScriptRoot/res",'-o',"$buildDir/resources.zip")
-Run-Tool "$buildTools/aapt2.exe" @('link','-o',"$buildDir/unsigned.apk",'--manifest',"$PSScriptRoot/AndroidManifest.xml",'-I',$androidJar,'-A',"$buildDir/assets","$buildDir/resources.zip")
+Run-Tool "$buildTools/aapt2.exe" @('link','-o',"$buildDir/unsigned.apk",'--manifest',"$PSScriptRoot/AndroidManifest.xml",'-I',$androidJar,"$buildDir/resources.zip")
+Run-Tool "$javaBin/jar.exe" @('uf',"$buildDir/unsigned.apk",'-C',$assetPackage,'assets')
 Run-Tool "$javaBin/javac.exe" @('-encoding','UTF-8','-source','8','-target','8','-classpath',$androidJar,'-d',"$buildDir/classes","$PSScriptRoot/src/tw/ecogame/mario/MainActivity.java")
 $classFiles = @(Get-ChildItem "$buildDir/classes" -Filter '*.class' -Recurse | ForEach-Object { $_.FullName })
 Run-Tool "$javaBin/java.exe" (@('-cp',"$buildTools/lib/d8.jar",'com.android.tools.r8.D8','--lib',$androidJar,'--min-api','26','--output',"$buildDir/dex") + $classFiles)

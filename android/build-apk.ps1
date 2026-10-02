@@ -25,7 +25,7 @@ if (!(Test-Path $keyFile)) {
   if (!(Test-Path $passwordFile)) { [IO.File]::WriteAllText($passwordFile, [Guid]::NewGuid().ToString('N')) }
   Run-Tool "$javaBin/keytool.exe" @('-genkeypair','-keystore',$keyFile,'-storetype','PKCS12','-storepass:file',$passwordFile,'-keypass:file',$passwordFile,'-alias','eco-mario','-keyalg','RSA','-keysize','2048','-validity','10000','-dname','CN=Eco-Mario, O=Eco Game, C=TW')
 }
-$apk = Join-Path $outputDir 'Eco-Mario-1.0.0.apk'
+$apk = Join-Path $outputDir 'Eco-Mario-1.0.1.apk'
 Run-Tool "$javaBin/java.exe" @('-jar',"$buildTools/lib/apksigner.jar",'sign','--ks',$keyFile,'--ks-key-alias','eco-mario','--ks-pass',"file:$passwordFile",'--out',$apk,"$buildDir/aligned.apk")
 Run-Tool "$javaBin/java.exe" @('-jar',"$buildTools/lib/apksigner.jar",'verify',$apk)
 Write-Host "APK ready: $apk"

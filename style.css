@@ -472,6 +472,8 @@ body.rules-open { overflow: hidden; }
 .control-diagrams strong, .control-diagrams span { display: block; margin-top: 8px; }
 .control-diagrams span { color: var(--muted); font-size: 0.75rem; }
 .game-broadcast { width: min(800px, calc(100vw - 32px)); margin: 0 0 12px; }
+.combo-summary { display: flex; justify-content: space-between; gap: 10px; width: min(800px, calc(100vw - 32px)); margin-bottom: 8px; color: var(--forest-800); font-size: 0.8rem; }
+.combo-toast { position: absolute; z-index: 13; bottom: 12px; left: 50%; transform: translateX(-50%); width: max-content; max-width: 94%; padding: 8px 14px; border: 1px solid #c6ddb3; border-radius: 999px; background: rgba(250,255,239,0.95); color: #39613a; text-align: center; font-size: clamp(0.6rem, 1.5vw, 0.85rem); font-weight: 800; pointer-events: none; }
 .game-broadcast .event-card { min-height: 72px; box-shadow: none; }
 .event-card[data-event="scene"] { border-color: #aac894; background: #e8f4db; }
 .opening-hint { position: absolute; top: 30%; left: 50%; transform: translateX(-50%); z-index: 12; width: max-content; max-width: 90%; padding: 12px 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.75); background: rgba(255,253,240,0.9); box-shadow: 0 5px 24px rgba(35,64,44,0.12); text-align: center; pointer-events: none; color: var(--forest-950); font-size: 0.85rem; }

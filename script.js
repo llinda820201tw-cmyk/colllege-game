@@ -31,6 +31,9 @@
   const SECOND_JUMP_VELOCITY = -13.0;
   const MOVE_SPEED = 4.8;
   const MAX_LIVES = 5;
+  const combo = { count: 0, best: 0, notice: 0, effect: 0, celebration: false };
+  const comboCountEl = document.getElementById("comboCount");
+  const comboToast = document.getElementById("comboToast");
   const SMOKE_STAGES = [
     { cycle: 6000, erupt: 800 },
     { cycle: 5000, erupt: 1000 },
@@ -151,6 +154,26 @@
   });
 
   function clamp(val, min, max) { return Math.max(min, Math.min(max, val)); }
+
+  function collectCombo() {
+    combo.count += 1;
+    combo.best = Math.max(combo.best, combo.count);
+    const milestone = combo.count % 10;
+    const bonus = milestone === 0 ? 100 : milestone === 5 ? 50 : milestone === 3 ? 20 : 0;
+    if (bonus) {
+      world.score += bonus;
+      comboToast.textContent = `${milestone === 0 ? "🌱 環保達人！" : milestone === 5 ? "🍃 回收連連！" : "♻ 回收好手！"} ${combo.count} 連段 · 額外 +${bonus} 分`;
+      combo.notice = 2400;
+      combo.effect = milestone === 0 ? 2000 : milestone === 5 ? 1400 : 0;
+      combo.celebration = milestone === 0;
+    }
+    updateComboHud();
+  }
+
+  function updateComboHud() {
+    comboCountEl.textContent = `${combo.count} 連段 · 本局最高 ${combo.best}`;
+    comboToast.classList.toggle("hidden", combo.notice <= 0);
+  }
 
   function refreshTouchButtons() {
     Object.entries(touchButtons).forEach(([action, button]) => {
@@ -347,6 +370,8 @@
   }
 
   function resetWorld() {
+    Object.assign(combo, { count: 0, best: 0, notice: 0, effect: 0, celebration: false });
+    updateComboHud();
     world.cameraX = 0;
     world.ecoScore = 50;
     world.score = 0;
@@ -524,6 +549,13 @@
   function hitPlayer(source = null, sourceX = player.x) {
     if (state !== STATE.PLAYING || player.invincible > 0 || (selectedCharacter === "char17" && ability.remaining > 0)) return;
     world.lives -= 1;
+    if (combo.count > 0) {
+      comboToast.textContent = `連段中斷，重新挑戰！本局最高 ${combo.best} 件`;
+      combo.notice = 1800;
+    }
+    combo.count = 0;
+    combo.effect = 0;
+    updateComboHud();
     setEcoScore(world.ecoScore - 12);
     player.invincible = 1000;
     if (source === "smoke") {
@@ -578,6 +610,9 @@
 
   function update(dt) {
     if (state !== STATE.PLAYING) return;
+    combo.notice = Math.max(0, combo.notice - dt);
+    combo.effect = Math.max(0, combo.effect - dt);
+    updateComboHud();
     gameTime += dt;
     if (gameTime >= GAME_LIMIT_MS) {
       updateHud();
@@ -667,6 +702,7 @@
         t.alive = false;
         if (t.type === "recyclable") {
           world.score += 40;
+          collectCombo();
           setEcoScore(world.ecoScore + 4);
           world.lives = Math.min(MAX_LIVES, world.lives + 1);
           player.vy = FIRST_JUMP_VELOCITY * 0.65;
@@ -697,6 +733,7 @@
       if (Math.sqrt(dx*dx + dy*dy) < p.r + 20) {
         setEcoScore(world.ecoScore + 6);
         world.score += 20;
+        collectCombo();
         updateHud();
         return false;
       }
@@ -898,6 +935,22 @@
 
     drawGroundShadow(player.x + player.w / 2, player.y + player.h, 23);
     drawPlayer();
+
+    if (combo.effect > 0) {
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, combo.effect / 450);
+      const pieces = combo.celebration ? 18 : 8;
+      for (let i = 0; i < pieces; i++) {
+        const angle = i * Math.PI * 2 / pieces + gameTime * 0.002;
+        const radius = combo.celebration ? 70 + Math.sin(i + gameTime * 0.004) * 18 : 55;
+        ctx.fillStyle = combo.celebration ? ["#95c97a", "#f0ca77", "#eea8bb", "#9dd0df"][i % 4] : "#98c980";
+        ctx.beginPath();
+        ctx.ellipse(player.x + player.w / 2 + Math.cos(angle) * radius,
+          player.y + player.h / 2 + Math.sin(angle) * radius * 0.65, 5, 2.5, angle, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
 
     if (ability.remaining > 0) {
       const skill = CHARACTERS[selectedCharacter];

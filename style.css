@@ -629,3 +629,9 @@ body.rules-open { overflow: hidden; }
   .game-page .touch-jump { min-width: 65px !important; }
   .game-page .adventure-controls { right: 85px; width: 100px; }
 }
+
+@media (max-height: 520px) and (orientation: landscape) {
+  .game-page > .title-block { display: block; }
+  .game-page .touch-button { min-height: 54px; padding-block: 4px; gap: 2px; font-size: 1.25rem; }
+  .game-page .touch-controls { bottom: max(6px, env(safe-area-inset-bottom)); }
+}

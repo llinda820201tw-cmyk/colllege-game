@@ -1,0 +1,26 @@
+Eco-Mario Android 安裝包 1.0.0
+
+安裝檔：專案 downloads/Eco-Mario-1.0.0.apk
+支援：Android 8.0 以上；請使用已更新的 Android System WebView。
+遊戲程式與圖片都包含在 APK 內，可以離線遊玩；採橫向全螢幕。
+手機返回鍵：遊戲中回到選角首頁，首頁再按返回則關閉 App。
+APK 不適用於 iPhone 或直接安裝於 Windows。
+
+分享方式：
+1. 將 APK 上傳 Google 雲端硬碟或其他雲端儲存空間。
+2. 設定檔案分享權限，複製分享連結給朋友。
+3. 朋友用 Android 手機下載後，點檔案安裝。
+4. 若手機要求允許此來源安裝應用程式，依提示開啟此來源權限。
+5. LINE 內無法下載或安裝時，改用手機瀏覽器開啟分享連結。
+
+更新遊戲：
+修改 AndroidManifest.xml 的 versionCode 與 versionName，並同步更新 build-apk.ps1 的 APK 檔名。
+在專案目錄執行：powershell -ExecutionPolicy Bypass -File android/build-apk.ps1
+打包工具使用本機 Android Studio JBR 與 Android SDK 36.0.0 / android-36.1。
+
+簽章備份：
+android/private/ 內的金鑰與密碼只保存在本機，未上傳 GitHub。
+請將整個 private 資料夾另外存到你自己的安全備份空間。
+未來更新 APK 必須使用相同金鑰；請不要將這個資料夾公開分享。
+
+本版已成功編譯並通過 APK 簽章驗證，尚未在實體 Android 手機安裝測試。

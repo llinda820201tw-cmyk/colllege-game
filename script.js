@@ -601,19 +601,19 @@
     gameOverOverlay.classList.add("hidden");
   }
 
-  async function goToHome() {
+  function goToHome() {
     if (homeTimer) clearTimeout(homeTimer);
     state = STATE.START;
     clearTouchInput();
     keys.left = false;
     keys.right = false;
     updateAdventureHud();
-    if (document.fullscreenElement && document.exitFullscreen) {
-      try { await document.exitFullscreen(); } catch { /* 返回首頁仍可繼續執行。 */ }
-    }
     gameOverOverlay.classList.add("hidden");
     gameView.classList.add("hidden");
     landingView.classList.remove("hidden");
+    if (document.fullscreenElement && document.exitFullscreen) {
+      document.exitFullscreen().catch(() => {});
+    }
     window.scrollTo(0, 0);
   }
 
@@ -1034,7 +1034,13 @@
   });
 
   if (enterGameBtn) enterGameBtn.addEventListener("click", startGame);
-  document.getElementById("quickRestartBtn").addEventListener("click", goToHome);
+  const quickRestartBtn = document.getElementById("quickRestartBtn");
+  quickRestartBtn.addEventListener("click", goToHome);
+  quickRestartBtn.addEventListener("pointerup", (e) => {
+    if (e.pointerType !== "touch" && e.pointerType !== "pen") return;
+    e.preventDefault();
+    goToHome();
+  });
   if (restartBtn) restartBtn.addEventListener("click", goToHome);
   skillBtn.addEventListener("click", useSkill);
   skillBtn.addEventListener("pointerdown", (e) => {
@@ -1097,7 +1103,7 @@
   fullscreenBtn.addEventListener("click", async () => {
     try {
       if (document.fullscreenElement) await document.exitFullscreen();
-      else await gameView.requestFullscreen();
+      else await document.documentElement.requestFullscreen();
     } catch { fullscreenBtn.textContent = "目前使用滿版畫面"; }
   });
   document.addEventListener("fullscreenchange", () => {

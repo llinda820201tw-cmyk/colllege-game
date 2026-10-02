@@ -158,14 +158,12 @@
   function collectCombo() {
     combo.count += 1;
     combo.best = Math.max(combo.best, combo.count);
-    const milestone = combo.count % 10;
-    const bonus = milestone === 0 ? 100 : milestone === 5 ? 50 : milestone === 3 ? 20 : 0;
-    if (bonus) {
-      world.score += bonus;
-      comboToast.textContent = `${milestone === 0 ? "🌱 環保達人！" : milestone === 5 ? "🍃 回收連連！" : "♻ 回收好手！"} ${combo.count} 連段 · 額外 +${bonus} 分`;
+    if (combo.count % 10 === 0) {
+      world.score += 100;
+      comboToast.textContent = `🌱 環保達人！ ${combo.count} 連段 · 額外 +100 分`;
       combo.notice = 2400;
-      combo.effect = milestone === 0 ? 2000 : milestone === 5 ? 1400 : 0;
-      combo.celebration = milestone === 0;
+      combo.effect = 2000;
+      combo.celebration = true;
     }
     updateComboHud();
   }

@@ -534,6 +534,7 @@ body.rules-open { overflow: hidden; }
 }
 
 /* 手機直向放大視野；保留比例，從左側顯示角色與前方道路。 */
+.fullscreen-button { border: 1px solid #c4d9c3; border-radius: 999px; padding: 7px 12px; color: var(--forest-800); background: rgba(245,253,232,0.85); cursor: pointer; margin-bottom: 8px; }
 @media (max-width: 700px) and (orientation: portrait) {
   body:has(.game-page:not(.hidden)) { padding: 8px; }
   .game-page > .title-block { margin-bottom: 6px; }
@@ -576,4 +577,55 @@ body.rules-open { overflow: hidden; }
   .game-stage { width: min(1000px, calc(100vw - 16px), calc((100svh - 115px) * 2)); border-width: 3px; }
   .adventure-controls { width: min(460px, calc(100vw - 350px)); }
   .adventure-controls .skill-button { font-size: 0.75rem; }
+}
+
+/* 遊戲內觸控介面：按鈕沿畫面邊緣排列，留下中央遊玩空間。 */
+@media (any-pointer: coarse), (max-width: 700px), (max-height: 520px) and (orientation: landscape) {
+  body:has(.game-page:not(.hidden)) { padding: 0; overflow: hidden; }
+  .game-page:not(.hidden) {
+    position: fixed; inset: 0; width: 100%; max-width: none;
+    height: 100vh; height: 100dvh;
+    isolation: isolate; background: #d5e9c9;
+  }
+  .game-page .game-stage { position: absolute; inset: 0; width: 100%; height: 100%; aspect-ratio: auto; border: 0; border-radius: 0; box-shadow: none; }
+  .game-page #gameCanvas { width: 100%; height: 100%; object-fit: fill; }
+  .game-page > .title-block { position: absolute; top: calc(50px + env(safe-area-inset-top)); left: 12px; margin: 0; z-index: 11; pointer-events: none; }
+  .game-page > .title-block h1, .game-page > .title-block > p, .game-page .scene-summary span { display: none; }
+  .game-page .scene-summary { margin: 0; }
+  .game-page .scene-summary strong { padding: 4px 9px; font-size: 0.7rem; background: rgba(247,255,233,0.72); }
+  .game-page .hud { top: calc(8px + env(safe-area-inset-top)); left: max(8px, env(safe-area-inset-left)); right: max(8px, env(safe-area-inset-right)); gap: 6px; }
+  .game-page .hud-eco { min-width: 95px; padding: 6px 8px; }
+  .game-page .hud-stats { padding: 7px 8px; gap: 7px; font-size: 0.65rem; }
+  .game-page .hud-label { font-size: 0.65rem; }
+  .game-page .combo-summary { position: absolute; top: calc(54px + env(safe-area-inset-top)); right: 12px; width: auto; max-width: 60%; margin: 0; z-index: 11; font-size: 0.65rem; pointer-events: none; }
+  .game-page .combo-summary > strong { display: none; }
+  .game-page .game-broadcast { position: absolute; top: calc(80px + env(safe-area-inset-top)); left: 12px; width: auto; max-width: calc(100% - 24px); margin: 0; z-index: 11; pointer-events: none; }
+  .game-page .event-card { display: flex; align-items: center; gap: 10px; min-height: 0; padding: 5px 10px; border-radius: 12px; background: rgba(248,255,236,0.78); }
+  .game-page .event-card strong { font-size: 0.7rem; }
+  .game-page .event-card p { display: none; }
+  .game-page .event-card span { position: static; margin: 0; font-size: 0.65rem; }
+  .game-page .touch-controls { position: absolute; bottom: max(12px, env(safe-area-inset-bottom)); left: max(12px, env(safe-area-inset-left)); right: max(12px, env(safe-area-inset-right)); width: auto; margin: 0; z-index: 15; display: flex; pointer-events: none; }
+  .game-page .touch-directions { gap: 8px; }
+  .game-page .touch-button { pointer-events: auto; min-width: 56px; min-height: 60px; padding: 6px 10px; background: rgba(234,249,222,0.76); border-color: rgba(144,182,125,0.65); box-shadow: 0 3px 0 rgba(86,128,70,0.35); backdrop-filter: blur(3px); }
+  .game-page .touch-jump { min-width: 76px !important; background: rgba(255,240,191,0.8); }
+  .game-page .touch-button span { font-size: 0.6rem; }
+  .game-page .adventure-controls { position: absolute; bottom: max(12px, env(safe-area-inset-bottom)); right: calc(98px + env(safe-area-inset-right)); width: clamp(100px, 28vw, 145px); margin: 0; z-index: 16; }
+  .game-page .skill-button { min-height: 60px; padding: 7px 8px; display: flex; flex-direction: column; justify-content: center; gap: 3px; border-radius: 16px; background: rgba(243,253,223,0.82); backdrop-filter: blur(3px); font-size: 0.65rem; }
+  .game-page .skill-effect, .game-page .touch-tip { display: none !important; }
+  .game-page .skill-progress { flex-shrink: 0; height: 4px; }
+  .game-page .fullscreen-button { position: absolute; bottom: calc(83px + env(safe-area-inset-bottom)); right: max(12px, env(safe-area-inset-right)); margin: 0; z-index: 16; font-size: 0.65rem; }
+  .game-page .opening-hint { top: 32%; }
+  .game-page .combo-toast { bottom: calc(110px + env(safe-area-inset-bottom)); }
+  .game-page .overlay { z-index: 25; padding-top: max(16px, env(safe-area-inset-top)); padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+}
+
+@media (orientation: portrait) and (max-width: 700px) {
+  .game-page #gameCanvas { height: calc(100% - 92px - env(safe-area-inset-bottom)); }
+  .game-page .game-stage { background: linear-gradient(#c5dfa9, #a8cb90); }
+}
+
+@media (max-width: 350px) {
+  .game-page .touch-button { min-width: 46px; padding-inline: 6px; }
+  .game-page .touch-jump { min-width: 65px !important; }
+  .game-page .adventure-controls { right: 85px; width: 100px; }
 }

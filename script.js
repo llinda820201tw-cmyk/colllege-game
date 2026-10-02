@@ -5,7 +5,7 @@
 
   const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
-  const WIDTH = 800;
+  let WIDTH = 800;
   const HEIGHT = 400;
   const GROUND_Y = 340;
 
@@ -29,7 +29,7 @@
   const GRAVITY = 0.65;
   const FIRST_JUMP_VELOCITY = -14.5;
   const SECOND_JUMP_VELOCITY = -13.0;
-  const MOVE_SPEED = 4.8;
+  const MOVE_SPEED = 4.5;
   const MAX_LIVES = 5;
   const combo = { count: 0, best: 0, notice: 0, effect: 0, celebration: false };
   const comboCountEl = document.getElementById("comboCount");
@@ -111,6 +111,8 @@
 
   let state = STATE.START;
   let lastTime = 0;
+  let simulationRemainder = 0;
+  const FRAME_MS = 1000 / 60;
   let gameTime = 0;
   let homeTimer = null;
   let keys = { left: false, right: false };
@@ -588,6 +590,7 @@
     if (rulesDialog.open) rulesDialog.close();
     landingView.classList.add("hidden");
     gameView.classList.remove("hidden");
+    resizeGameViewport();
     resetWorld();
     state = STATE.PLAYING;
     updateAdventureHud();
@@ -621,10 +624,13 @@
     updateAdventure(dt);
     updateHud();
 
-    if (directionHeld("left")) { player.vx = -MOVE_SPEED; player.facing = "left"; }
-    else if (directionHeld("right")) { player.vx = MOVE_SPEED; player.facing = "right"; }
-    else { player.vx = 0; }
-    if (eventState.type === "wind") player.vx += 1.4;
+    let targetSpeed = 0;
+    if (directionHeld("left")) { targetSpeed = -MOVE_SPEED; player.facing = "left"; }
+    else if (directionHeld("right")) { targetSpeed = MOVE_SPEED; player.facing = "right"; }
+    const braking = targetSpeed === 0 || targetSpeed * player.vx < 0;
+    if (eventState.type === "wind") targetSpeed += 1.4;
+    const speedStep = (braking ? 0.95 : 0.6) * dt / FRAME_MS;
+    player.vx += Math.max(-speedStep, Math.min(speedStep, targetSpeed - player.vx));
     if (player.knockbackRemaining > 0) {
       player.vx = player.knockbackVx;
       player.knockbackRemaining = Math.max(0, player.knockbackRemaining - dt);
@@ -667,7 +673,7 @@
 
     if (player.invincible > 0) player.invincible -= dt;
 
-    world.cameraX = Math.max(0, player.x - 200);
+    world.cameraX = Math.max(0, player.x - Math.min(200, WIDTH * 0.28));
 
     const isErupting = getSmokePhase() === "erupting";
 
@@ -800,9 +806,11 @@
     const img = scene.image;
     if (img.complete && img.naturalWidth > 0) {
       const sourceGround = Math.round(img.naturalHeight * scene.surface);
+      const sourceWidth = img.naturalWidth * Math.min(1, WIDTH / 800);
+      const sourceLeft = (img.naturalWidth - sourceWidth) / 2;
       // 對齊每張圖片的地面與碰撞地板，避免角色腳下漂浮或陷入背景。
-      ctx.drawImage(img, 0, 0, img.naturalWidth, sourceGround, world.cameraX, 0, WIDTH, GROUND_Y);
-      ctx.drawImage(img, 0, sourceGround, img.naturalWidth, img.naturalHeight - sourceGround, world.cameraX, GROUND_Y, WIDTH, HEIGHT - GROUND_Y);
+      ctx.drawImage(img, sourceLeft, 0, sourceWidth, sourceGround, world.cameraX, 0, WIDTH, GROUND_Y);
+      ctx.drawImage(img, sourceLeft, sourceGround, sourceWidth, img.naturalHeight - sourceGround, world.cameraX, GROUND_Y, WIDTH, HEIGHT - GROUND_Y);
     } else {
       ctx.fillStyle = "#c9e9e5";
       ctx.fillRect(world.cameraX, 0, WIDTH, GROUND_Y);
@@ -985,9 +993,13 @@
 
   function loop(timestamp) {
     if (!lastTime) lastTime = timestamp;
-    const dt = Math.min(32, timestamp - lastTime);
+    const dt = Math.min(100, timestamp - lastTime);
     lastTime = timestamp;
-    update(dt);
+    simulationRemainder += dt;
+    while (simulationRemainder >= FRAME_MS) {
+      update(FRAME_MS);
+      simulationRemainder -= FRAME_MS;
+    }
     draw();
     requestAnimationFrame(loop);
   }
@@ -1062,6 +1074,25 @@
   window.addEventListener("blur", releaseInputs);
   document.addEventListener("visibilitychange", () => { if (document.hidden) releaseInputs(); });
 
+  function resizeGameViewport() {
+    if (gameView.classList.contains("hidden")) return;
+    const bounds = canvas.getBoundingClientRect();
+    WIDTH = Math.max(180, Math.round(HEIGHT * bounds.width / Math.max(1, bounds.height)));
+    canvas.width = WIDTH;
+    world.cameraX = Math.max(0, player.x - Math.min(200, WIDTH * 0.28));
+  }
+  new ResizeObserver(resizeGameViewport).observe(canvas);
+  const fullscreenBtn = document.getElementById("fullscreenBtn");
+  fullscreenBtn.hidden = !gameView.requestFullscreen;
+  fullscreenBtn.addEventListener("click", async () => {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await gameView.requestFullscreen();
+    } catch { fullscreenBtn.textContent = "目前使用滿版畫面"; }
+  });
+  document.addEventListener("fullscreenchange", () => {
+    fullscreenBtn.textContent = document.fullscreenElement ? "⛶ 離開全螢幕" : "⛶ 全螢幕";
+  });
   resetWorld();
   requestAnimationFrame(loop);
 })();

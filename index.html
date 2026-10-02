@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Eco-Mario｜環保大冒險</title>
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -47,6 +47,7 @@
 
   <!-- ================= 遊戲區塊 ================= -->
   <div class="game-page hidden" id="gameView">
+    <button type="button" class="fullscreen-button" id="fullscreenBtn">⛶ 全螢幕</button>
     <header class="title-block">
       <h1>Eco-Mario</h1>
       <p>左右自由移動，清理路上垃圾，還給大地潔淨！</p>
@@ -106,7 +107,7 @@
       </div>
       <button type="button" class="touch-button touch-jump" id="touchJumpBtn" aria-label="跳躍，再按一次二段跳">↑<span>跳躍 / 二段跳</span></button>
     </div>
-    <p class="touch-tip">按住方向按鈕移動，點跳躍；空中再點一次可二段跳。技能可點上方按鈕。</p>
+    <p class="touch-tip">按住方向按鈕移動，點跳躍；空中再點一次可二段跳。手機技能按鈕位於畫面右下方。</p>
   </div>
 
   <dialog class="rules-dialog" id="rulesDialog" aria-labelledby="rulesTitle">
@@ -116,7 +117,7 @@
       <h3 class="instructions-heading">🎮 操作與遊戲規則</h3>
       <ul class="rules-list">
         <li>方向鍵 ◄ ►：左右自由移動。手機可按住畫面下方的左、右按鈕，一邊移動一邊點跳躍。</li>
-        <li>⬆ / 空白鍵：跳躍。手機點「跳躍」按鈕，空中再點一次可二段跳；技能可直接點技能欄。手機橫向遊玩可看得更清楚。</li>
+        <li>⬆ / 空白鍵：跳躍。手機點畫面右下方「跳躍」按鈕，空中再點一次可二段跳；旁邊的技能按鈕會顯示冷卻進度。手機遊戲採滿版介面，橫向可看見更遠的道路；支援的瀏覽器可點「全螢幕」隱藏網址列。</li>
         <li>✨ 技能快捷鍵：藍衣男孩按 <kbd>1</kbd>、雙馬尾女孩按 <kbd>2</kbd>、灰髮男孩按 <kbd>3</kbd>。上排數字鍵與數字鍵盤都支援；按 <kbd>E</kbd> 或點技能按鈕，也能使用目前角色的技能。</li>
         <li><span class="rule-recycle">綠色 ♻ 加生命垃圾</span>：紙箱、寶特瓶、鋁罐，碰到後<strong>增加 1 顆生命並得 40 分</strong>（最多 5 顆）。</li>
         <li><span class="rule-ordinary">紅色 ⚠ 扣生命垃圾</span>：碎掉的雞蛋、破掉的手機、黑色垃圾、魚骨頭，碰到後<strong>扣 1 顆生命</strong>，請避開！</li>

@@ -532,3 +532,48 @@ body.rules-open { overflow: hidden; }
   .adventure-controls .skill-button { column-gap: 8px; }
   .skill-effect { font-size: 0.7rem; }
 }
+
+/* 手機直向放大視野；保留比例，從左側顯示角色與前方道路。 */
+@media (max-width: 700px) and (orientation: portrait) {
+  body:has(.game-page:not(.hidden)) { padding: 8px; }
+  .game-page > .title-block { margin-bottom: 6px; }
+  .game-page > .title-block h1,
+  .game-page > .title-block > p,
+  .game-page .scene-summary span { display: none; }
+  .game-page .scene-summary { margin-top: 0; }
+  .game-stage {
+    width: 100%;
+    height: min(78vw, 52svh);
+    aspect-ratio: auto;
+    border-radius: 14px;
+  }
+  #gameCanvas { object-fit: cover; object-position: left center; }
+  .game-broadcast, .combo-summary, .adventure-controls, .touch-controls { width: 100%; }
+  .combo-summary { margin-bottom: 5px; font-size: 0.72rem; }
+  .game-broadcast { margin-bottom: 6px; }
+  .game-broadcast .event-card { min-height: 0; padding: 7px 10px; }
+  .game-broadcast .event-card strong { font-size: 0.8rem; }
+  .game-broadcast .event-card p { margin-top: 2px; font-size: 0.7rem; }
+  .game-broadcast .event-card span { margin-top: 2px; font-size: 0.65rem; }
+  .adventure-controls { margin-top: 8px; }
+  .adventure-controls .skill-button { padding: 9px 12px; gap: 4px 8px; }
+  .skill-effect { display: none; }
+  .touch-controls { margin-top: 8px; }
+  .touch-button { min-height: 60px; }
+  .touch-tip { margin-top: 7px; font-size: 0.68rem; }
+}
+
+/* 橫向讓遊戲使用更多螢幕寬度，操作鈕仍固定在兩側。 */
+@media (max-height: 520px) and (orientation: landscape) {
+  body:has(.game-page:not(.hidden)) { padding: 4px 8px; }
+  .game-page { max-width: 1000px; }
+  .combo-summary { margin-bottom: 3px; font-size: 0.7rem; }
+  .game-broadcast { margin-bottom: 4px; }
+  .game-broadcast .event-card { padding: 5px 110px 5px 10px; }
+  .game-broadcast .event-card strong { font-size: 0.8rem; }
+  .game-broadcast .event-card p { display: none; }
+  .game-broadcast .event-card span { top: 6px; font-size: 0.65rem; }
+  .game-stage { width: min(1000px, calc(100vw - 16px), calc((100svh - 115px) * 2)); border-width: 3px; }
+  .adventure-controls { width: min(460px, calc(100vw - 350px)); }
+  .adventure-controls .skill-button { font-size: 0.75rem; }
+}

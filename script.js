@@ -1030,7 +1030,7 @@
   });
 
   if (enterGameBtn) enterGameBtn.addEventListener("click", startGame);
-  document.getElementById("quickRestartBtn").addEventListener("click", startGame);
+  document.getElementById("quickRestartBtn").addEventListener("click", goToHome);
   if (restartBtn) restartBtn.addEventListener("click", goToHome);
   skillBtn.addEventListener("click", useSkill);
   skillBtn.addEventListener("pointerdown", (e) => {

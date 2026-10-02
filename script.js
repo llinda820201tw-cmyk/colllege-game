@@ -102,7 +102,7 @@
     { id: "forest", name: "🌳 陽光森林", threshold: 1200, surface: 0.79, ground: "#91bd58", soil: "#896747", obstacleChance: 0.43, recycleChance: 0.80, spacing: 240, safeItems: [25, 26], dangerItems: [21, 23], obstacle: "stump", hint: "深入森林，跳過樹樁並清理留下的垃圾。", rainbowX: 0.51 }
   ];
   SCENES.forEach(scene => { scene.image = new Image(); scene.image.src = `assets/scenes/${scene.id}.png`; });
-  const scenery = { index: 0, previous: 0, transition: 1200, rainbow: 0, riverGroups: 0, notice: 0 };
+  const scenery = { index: 0, previous: 0, transition: 1200, rainbow: 0, riverGroups: 0, notice: 0, speedFactor: 1 };
   const sceneNameEl = document.getElementById("sceneName");
   const sceneHintEl = document.getElementById("sceneHint");
 
@@ -228,12 +228,12 @@
     refreshTouchButtons();
     const event = EVENTS[eventState.type];
     const scene = SCENES[scenery.index];
-    const sceneNotice = !event && scenery.notice > 0;
-    eventCard.dataset.event = eventState.type || (sceneNotice ? "scene" : "calm");
-    const broadcastName = event ? event.name : sceneNotice ? `新關卡 · ${scene.name}` : "🌿 平靜時刻";
+    const sceneNotice = scenery.notice > 0;
+    eventCard.dataset.event = sceneNotice ? "scene" : eventState.type || "calm";
+    const broadcastName = sceneNotice ? `冒險節奏加快！ · ${scene.name}` : event ? event.name : "🌿 平靜時刻";
     if (eventNameEl.textContent !== broadcastName) eventNameEl.textContent = broadcastName;
     eventDescriptionEl.textContent = event ? event.description : sceneNotice ? scene.hint : (eventState.lastType ? "趁現在清理垃圾，準備下一波冒險。" : "準備迎接清潔隊補給！");
-    eventCountdownEl.textContent = event ? `剩餘 ${Math.ceil(eventState.remaining / 1000)} 秒` : `${Math.max(0, Math.ceil((eventState.nextAt - gameTime) / 1000))} 秒後事件`;
+    eventCountdownEl.textContent = sceneNotice ? `速度 +${scenery.index * 5}%` : event ? `剩餘 ${Math.ceil(eventState.remaining / 1000)} 秒` : `${Math.max(0, Math.ceil((eventState.nextAt - gameTime) / 1000))} 秒後事件`;
     sceneNameEl.textContent = scene.name;
     sceneHintEl.textContent = scene.hint + (world.score >= RAINBOW_SCORE ? " 🌈 彩虹已出現！" : ` 下一站：${SCENES[scenery.index + 1] ? SCENES[scenery.index + 1].threshold + " 分" : "2000 分終點"}`);
   }
@@ -254,6 +254,9 @@
       if (world.finishFlagX === null) generateMapSegment(player.x + 1200);
     }
     scenery.transition = Math.min(1200, scenery.transition + dt);
+    const speedTarget = 1 + scenery.index * 0.05;
+    const speedChange = 0.05 * dt / 1200;
+    scenery.speedFactor += Math.max(-speedChange, Math.min(speedChange, speedTarget - scenery.speedFactor));
     scenery.notice = Math.max(0, scenery.notice - dt);
     if (world.score >= RAINBOW_SCORE) scenery.rainbow = Math.min(1, scenery.rainbow + dt / 1600);
   }
@@ -264,7 +267,7 @@
     eventState.remaining = EVENTS[type].duration;
     if (type === "supply") {
       for (let i = 0; i < 4; i++) {
-        world.pickups.push({ x: player.x + 150 + i * 85, y: GROUND_Y - 70, r: 30,
+        world.pickups.push({ x: player.x + 150 + i * 85, y: GROUND_Y - 70, r: 24,
           type: "recycle", item: ["bottle", "can", "paper"][i % 3] });
       }
     }
@@ -310,7 +313,7 @@
       world.obstacles.push({ x: x + part.offset, y: GROUND_Y - part.h, w: part.w,
         h: part.h, kind: "rock", color: "#95a8a2", hasCO2: false });
       if (part.h >= 170) world.pickups.push({ x: x + part.offset + part.w / 2,
-        y: GROUND_Y - part.h - 42, r: 30, type: "recycle", item: "bottle" });
+        y: GROUND_Y - part.h - 42, r: 24, type: "recycle", item: "bottle" });
     });
     const last = pattern[pattern.length - 1];
     world.lastGeneratedX = x + last.offset + last.w + 120;
@@ -361,7 +364,7 @@
         world.pickups.push({
           x: x,
           y: GROUND_Y - 100 - Math.random() * 50,
-          r: 30,
+          r: 24,
           type: "recycle",
           item: ["bottle", "can", "paper"][Math.floor(Math.random() * 3)]
         });
@@ -379,7 +382,7 @@
     world.lastGeneratedX = 400;
     world.finishFlagX = null;
     gameTime = 0;
-    Object.assign(scenery, { index: 0, previous: 0, transition: 1200, rainbow: 0, riverGroups: 0, notice: 0 });
+    Object.assign(scenery, { index: 0, previous: 0, transition: 1200, rainbow: 0, riverGroups: 0, notice: 0, speedFactor: 1 });
     player.x = 100;
     player.y = GROUND_Y - player.h;
     player.vx = 0;
@@ -587,6 +590,7 @@
   }
 
   function startGame() {
+    if (homeTimer) clearTimeout(homeTimer);
     if (rulesDialog.open) rulesDialog.close();
     landingView.classList.add("hidden");
     gameView.classList.remove("hidden");
@@ -625,10 +629,11 @@
     updateHud();
 
     let targetSpeed = 0;
-    if (directionHeld("left")) { targetSpeed = -MOVE_SPEED; player.facing = "left"; }
-    else if (directionHeld("right")) { targetSpeed = MOVE_SPEED; player.facing = "right"; }
+    const stageSpeed = MOVE_SPEED * scenery.speedFactor;
+    if (directionHeld("left")) { targetSpeed = -stageSpeed; player.facing = "left"; }
+    else if (directionHeld("right")) { targetSpeed = stageSpeed; player.facing = "right"; }
     const braking = targetSpeed === 0 || targetSpeed * player.vx < 0;
-    if (eventState.type === "wind") targetSpeed += 1.4;
+    if (eventState.type === "wind") targetSpeed = Math.min(stageSpeed + 0.6, targetSpeed + 1.4);
     const speedStep = (braking ? 0.95 : 0.6) * dt / FRAME_MS;
     player.vx += Math.max(-speedStep, Math.min(speedStep, targetSpeed - player.vx));
     if (player.knockbackRemaining > 0) {
@@ -923,9 +928,9 @@
       ctx.save(); ctx.shadowColor = "rgba(65,64,42,0.22)"; ctx.shadowBlur = 3; ctx.shadowOffsetY = 2;
       if (t.imageId === 22) {
         // 22.png 右側有白線，只繪製透明圖案所在區域。
-        ctx.drawImage(img, 0, 0, img.naturalWidth * 0.82, img.naturalHeight, t.x - 16, t.y - 32, 56, 56);
+        ctx.drawImage(img, 0, 0, img.naturalWidth * 0.82, img.naturalHeight, t.x - 10, t.y - 20, 44, 44);
       } else {
-        ctx.drawImage(img, t.x - 16, t.y - 32, 56, 56);
+        ctx.drawImage(img, t.x - 10, t.y - 20, 44, 44);
       }
       ctx.restore();
     });
@@ -935,7 +940,7 @@
         const recycleImageId = { bottle: 26, can: 27, paper: 25 }[p.item];
         const img = itemImages[recycleImageId];
         if (img && img.complete && img.naturalWidth !== 0) {
-          ctx.drawImage(img, p.x - 36, p.y - 36, 72, 72);
+          ctx.drawImage(img, p.x - 28, p.y - 28, 56, 56);
         }
     });
 
@@ -1025,6 +1030,7 @@
   });
 
   if (enterGameBtn) enterGameBtn.addEventListener("click", startGame);
+  document.getElementById("quickRestartBtn").addEventListener("click", startGame);
   if (restartBtn) restartBtn.addEventListener("click", goToHome);
   skillBtn.addEventListener("click", useSkill);
   skillBtn.addEventListener("pointerdown", (e) => {
@@ -1096,3 +1102,4 @@
   resetWorld();
   requestAnimationFrame(loop);
 })();
+

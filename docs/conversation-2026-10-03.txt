@@ -1,0 +1,17 @@
+# 2026-10-03 工作紀錄
+
+## 今日對話與處理摘要
+
+- 使用者請求開啟 `C:\Users\Student\colllege-game-main`，已確認資料夾存在並在檔案總管開啟。
+- 使用者請求尋找今天修改後打包的 Android APK。確認簽署安裝檔為 `downloads\Eco-Mario-1.0.1.apk`，檔案最後修改時間為 2026/10/3 16:33:50，並在檔案總管中選取該檔案。
+- 打包中間檔為 `android\build\aligned.apk` 與 `android\build\unsigned.apk`；實際應下載測試的是 `downloads\Eco-Mario-1.0.1.apk`。
+- 專案打包說明記載 APK 已通過簽章驗證，版本 1.0.1 使用與 1.0.0 相同的簽章，可直接安裝更新；尚未在實體 Android 手機安裝測試。
+- 簽署金鑰和密碼檔位於 `android\private\eco-mario-release.p12` 與 `android\private\signing-password.txt`。本紀錄不包含密碼或金鑰內容。
+- 使用者請求保存今日對話與檔案並推送 GitHub。檢查時發現專案目錄沒有 `.git`，尚無 GitHub remote；需取得目標 GitHub repository 網址才能設定並推送。
+
+## 檔案狀態
+
+- 今日產生的簽署 APK 已位於 `downloads\Eco-Mario-1.0.1.apk`。
+- `android\build\`、`android\private\` 已列入 `.gitignore`。
+- `.gitignore` 目前明確允許追蹤 `downloads\Eco-Mario-1.0.1.apk`，並忽略其他 APK 與簽章 sidecar。
+- 專案根目錄另有簽章檔案副本；推送前必須將其排除，避免發布私密憑證。

@@ -117,7 +117,7 @@ button { font: inherit; }
 .instructions-heading { margin: 24px 0 10px; color: var(--forest-950); font-size: 1.05rem; text-align: left; }
 .scene-gallery { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; text-align: left; }
 .scene-gallery article { overflow: hidden; border: 1px solid #dbe8d7; border-radius: 13px; background: #f6faf3; }
-.scene-gallery img { display: block; width: 100%; aspect-ratio: 2 / 1; object-fit: cover; }
+.scene-gallery img { display: block; width: 90%; height: clamp(120px, 18vw, 220px); margin: 5% auto; border-radius: 10px; object-fit: cover; }
 .scene-gallery strong, .scene-gallery span, .scene-gallery p { display: block; margin: 8px 10px; }
 .scene-gallery strong { color: var(--forest-950); font-size: 0.84rem; }
 .scene-gallery span { color: var(--forest-700); font-size: 0.75rem; font-weight: 700; }
@@ -637,4 +637,43 @@ body.rules-open { overflow: hidden; }
   .game-page > .title-block { display: block; }
   .game-page .touch-button { min-height: 54px; padding-block: 4px; gap: 2px; font-size: 1.25rem; }
   .game-page .touch-controls { bottom: max(6px, env(safe-area-inset-bottom)); }
+}
+
+/* 手機直向時，將首頁、說明與遊戲畫面一併旋轉成橫向版面。 */
+@media (orientation: portrait) and (max-width: 700px) {
+  body {
+    position: fixed;
+    top: 0;
+    left: 100vw;
+    width: 100dvh;
+    height: 100vw;
+    min-height: 0;
+    padding: 8px 12px;
+    overflow: auto;
+    transform: rotate(90deg);
+    transform-origin: top left;
+  }
+  .landing-container { width: 100%; min-height: 100%; justify-content: center; padding: 4px 8px; }
+  .landing-container > .title-block { margin-bottom: 4px; }
+  .landing-container > .title-block h1 { font-size: 2rem; }
+  .landing-container > .title-block p { font-size: 0.8rem; }
+  .landing-card { width: min(100%, 900px); padding: 8px 14px; }
+  .landing-card h2 { margin-bottom: 6px; font-size: 1rem; }
+  .landing-card .character-select { margin-bottom: 8px; }
+  .landing-card .char-options { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .landing-card .character-card { grid-template-columns: 58px 1fr; column-gap: 8px; row-gap: 2px; padding: 6px; font-size: 0.72rem; }
+  .landing-card .character-portrait { grid-row: 1 / 6; width: 58px; height: 74px; }
+  .landing-card .character-portrait img { width: 420px; top: -72px; }
+  .landing-card .character-card strong { font-size: 0.78rem; }
+  .landing-card .character-ability, .landing-card .character-detail, .landing-card .character-key { font-size: 0.62rem; }
+  .landing-card .home-quick-tip { margin: 6px 0; font-size: 0.68rem; }
+  .landing-card .btn-start { min-height: 38px; padding: 7px 20px; }
+  .landing-card .btn-rules { padding: 7px 14px; font-size: 0.75rem; }
+  .bg-deco { opacity: 0.35; }
+  .game-page:not(.hidden) { height: 100%; }
+  .game-page .game-stage { height: 100%; }
+  .rules-dialog { max-height: calc(100% - 12px); }
+  .rules-dialog-content { min-height: 0; }
+  .control-diagrams { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .scene-gallery { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }

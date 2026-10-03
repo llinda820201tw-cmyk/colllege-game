@@ -1,5 +1,7 @@
 android/build/
 android/private/
+/eco-mario-release.p12
+/signing-password.txt
 downloads/*.apk
 !downloads/Eco-Mario-1.0.1.apk
 downloads/*.idsig

@@ -303,9 +303,9 @@
 
   function generateRiverObstacles(x) {
     const patterns = [
-      [{ offset: 0, h: 48, w: 44 }, { offset: 155, h: 180, w: 52 }, { offset: 450, h: 66, w: 48 }],
-      [{ offset: 0, h: 64, w: 48 }, { offset: 175, h: 190, w: 56 }],
-      [{ offset: 0, h: 176, w: 52 }, { offset: 190, h: 52, w: 44 }]
+      [{ offset: 0, h: 48, w: 44 }, { offset: 620, h: 156, w: 52 }, { offset: 1240, h: 66, w: 48 }],
+      [{ offset: 0, h: 64, w: 48 }, { offset: 650, h: 166, w: 56 }],
+      [{ offset: 0, h: 152, w: 52 }, { offset: 650, h: 52, w: 44 }]
     ];
     // 第一組固定由低到高，後續再交替不同組合；組間留出落地空間。
     const pattern = scenery.riverGroups === 0 ? patterns[0] : patterns[Math.floor(Math.random() * patterns.length)];
@@ -1112,4 +1112,3 @@
   resetWorld();
   requestAnimationFrame(loop);
 })();
-

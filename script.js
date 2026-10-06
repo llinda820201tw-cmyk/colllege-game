@@ -796,8 +796,17 @@
   const cy = player.y + player.h / 2 + offsetY;
   ctx.translate(cx, cy);
 
-  if (player.facing === "left") {
+  // 灰髮男孩的原圖朝左，因此行進方向要用相反的翻轉邏輯。
+  const reverseFacing = selectedCharacter === "char19";
+  const shouldFlip = reverseFacing
+    ? player.facing === "right"
+    : player.facing === "left";
+  if (shouldFlip) {
     ctx.scale(-1, 1);
+  }
+  // 雙馬尾女孩跑步時略微朝前傾，讓前進方向更容易辨認。
+  if (selectedCharacter === "char18" && player.vx !== 0) {
+    ctx.transform(1, 0, player.facing === "right" ? -0.12 : 0.12, 1, 0, 0);
   }
   ctx.rotate(rotation);
 
@@ -808,7 +817,8 @@
       // 維持原本 240x240 的角色尺寸，只裁掉右側白線所在的區域。
       ctx.save();
       ctx.beginPath();
-      ctx.rect(-120, -120, 132, 240);
+      const cropX = selectedCharacter === "char19" && shouldFlip ? -12 : -120;
+      ctx.rect(cropX, -120, 132, 240);
       ctx.clip();
       ctx.drawImage(currentImg, -120, -120 + 8, 240, 240);
       ctx.restore();

@@ -781,15 +781,22 @@
   ctx.save();
   let offsetY = 0;
   let rotation = 0;
+  let girlRunPhase = 0;
 
   if (player.vy !== 0) {
     // 空中跳躍：身體微往前傾斜，高度固定
     rotation = 0.08;
     offsetY = -2;
   } else if (player.vx !== 0) {
-    // 地面跑步：採用規律的踏步微彈效果（降低頻率與大幅縮小旋轉）
-    offsetY = -Math.abs(Math.sin(gameTime * 0.012)) * 5; 
-    rotation = Math.sin(gameTime * 0.006) * 0.03;
+    const isTwinTailGirl = selectedCharacter === "char18";
+    const runPhase = gameTime * (isTwinTailGirl ? 0.022 : 0.012);
+    offsetY = -Math.abs(Math.sin(runPhase)) * (isTwinTailGirl ? 9 : 5);
+    rotation = Math.sin(gameTime * (isTwinTailGirl ? 0.022 : 0.006)) * (isTwinTailGirl ? 0.08 : 0.03);
+    if (isTwinTailGirl) {
+      girlRunPhase = runPhase;
+      // 女孩跑步時身體持續朝前傾，並隨步伐上下彈動。
+      rotation += player.facing === "right" ? -0.13 : 0.13;
+    }
   }
 
   const cx = player.x + player.w / 2;
@@ -800,9 +807,10 @@
   if (shouldFlip) {
     ctx.scale(-1, 1);
   }
-  // 雙馬尾女孩跑步時略微朝前傾，讓前進方向更容易辨認。
-  if (selectedCharacter === "char18" && player.vx !== 0) {
-    ctx.transform(1, 0, player.facing === "right" ? -0.12 : 0.12, 1, 0, 0);
+  if (selectedCharacter === "char18" && player.vx !== 0 && player.vy === 0) {
+    const stride = Math.sin(girlRunPhase);
+    ctx.transform(1, 0, player.facing === "right" ? -0.2 : 0.2, 1, 0, 0);
+    ctx.scale(1 + Math.abs(stride) * 0.035, 1 - Math.abs(stride) * 0.045);
   }
   ctx.rotate(rotation);
 

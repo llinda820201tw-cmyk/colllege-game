@@ -65,6 +65,17 @@
   };
   const touchPointers = new Map();
   const touchDevice = window.matchMedia?.("(any-pointer: coarse)")?.matches || false;
+  let fullscreenRequestPending = false;
+  function enterPhoneFullscreen() {
+    if (!touchDevice || document.fullscreenElement || fullscreenRequestPending || !document.documentElement.requestFullscreen) return;
+    try {
+      fullscreenRequestPending = true;
+      const request = document.documentElement.requestFullscreen();
+      if (request && typeof request.then === "function") {
+        request.then(() => { fullscreenRequestPending = false; }, () => { fullscreenRequestPending = false; });
+      } else fullscreenRequestPending = false;
+    } catch { fullscreenRequestPending = false; }
+  }
   const eventCard = document.getElementById("eventCard");
   const eventNameEl = document.getElementById("eventName");
   const eventDescriptionEl = document.getElementById("eventDescription");
@@ -591,6 +602,7 @@
 
   function startGame() {
     if (homeTimer) clearTimeout(homeTimer);
+    enterPhoneFullscreen();
     if (rulesDialog.open) rulesDialog.close();
     landingView.classList.add("hidden");
     gameView.classList.remove("hidden");
@@ -611,9 +623,6 @@
     gameOverOverlay.classList.add("hidden");
     gameView.classList.add("hidden");
     landingView.classList.remove("hidden");
-    if (document.fullscreenElement && document.exitFullscreen) {
-      document.exitFullscreen().catch(() => {});
-    }
     window.scrollTo(0, 0);
   }
 
@@ -1069,11 +1078,15 @@
     button.addEventListener("click", e => { if (action === "jump" && e.detail === 0) jump(); });
   });
   if (touchDevice) {
+    landingView.addEventListener("pointerdown", () => {
+      if (state === STATE.START) enterPhoneFullscreen();
+    }, { capture: true });
     document.querySelector(".opening-hint strong").textContent = "按住 ◀ ▶ 移動";
     document.querySelector(".opening-hint span").textContent = "點跳躍 · 空中再點一次二段跳";
     document.querySelector(".home-quick-tip").textContent = "手機支援觸控移動、二段跳與技能 · 建議橫向遊玩";
   }
   openRulesBtn.addEventListener("click", () => {
+    enterPhoneFullscreen();
     rulesDialog.showModal();
     document.body.classList.add("rules-open");
   });

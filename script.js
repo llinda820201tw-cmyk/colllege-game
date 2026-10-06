@@ -98,19 +98,11 @@
   charImages.char17.src = "17.png";
   const charFrames = {
     char17: [charImages.char17],
-    char18: [],
-    char19: []
+    char18: [new Image()],
+    char19: [new Image()]
   };
-  ["girl-run-1.svg", "girl-run-2.svg"].forEach((file) => {
-    const frame = new Image();
-    frame.src = `assets/characters/${file}`;
-    charFrames.char18.push(frame);
-  });
-  ["boy-run-1.svg", "boy-run-2.svg"].forEach((file) => {
-    const frame = new Image();
-    frame.src = `assets/characters/${file}`;
-    charFrames.char19.push(frame);
-  });
+  charFrames.char18[0].src = "assets/characters/runner-18.png";
+  charFrames.char19[0].src = "assets/characters/runner-19.png";
   charImages.char18 = charFrames.char18[0];
   charImages.char19 = charFrames.char19[0];
   const itemImages = {};
@@ -798,13 +790,13 @@
     rotation = 0.08;
     offsetY = -2;
   } else if (player.vx !== 0) {
-    const isTwinTailGirl = selectedCharacter === "char18";
-    const runPhase = gameTime * (isTwinTailGirl ? 0.022 : 0.012);
-    offsetY = -Math.abs(Math.sin(runPhase)) * (isTwinTailGirl ? 9 : 5);
-    rotation = Math.sin(gameTime * (isTwinTailGirl ? 0.022 : 0.006)) * (isTwinTailGirl ? 0.08 : 0.03);
-    if (isTwinTailGirl) {
-      // 女孩跑步時身體持續朝前傾，並隨步伐上下彈動。
-      rotation += player.facing === "right" ? -0.13 : 0.13;
+    const isNewRunner = selectedCharacter === "char18" || selectedCharacter === "char19";
+    const runPhase = gameTime * (isNewRunner ? 0.022 : 0.012);
+    offsetY = -Math.abs(Math.sin(runPhase)) * (isNewRunner ? 8 : 5);
+    rotation = Math.sin(gameTime * (isNewRunner ? 0.022 : 0.006)) * (isNewRunner ? 0.07 : 0.03);
+    if (isNewRunner) {
+      // 新跑者沿步伐彈動並朝行進方向微傾。
+      rotation += player.facing === "right" ? -0.1 : 0.1;
     }
   }
 

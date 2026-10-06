@@ -460,14 +460,13 @@ kbd { display: inline-block; min-width: 23px; padding: 1px 6px; border: 1px soli
 .btn-rules:hover { background: #eaf5e7; }
 .btn-rules:focus-visible, .close-rules:focus-visible { outline: 3px solid #e5a92b; outline-offset: 3px; }
 body.rules-open { overflow: hidden; }
-.rules-dialog { position: fixed; inset: 0; margin: auto; width: min(860px, calc(100% - 32px)); max-height: min(88vh, 900px); padding: 0; border: 1px solid #edf5e7; border-radius: 24px; background: #fffdf7; color: var(--ink); box-shadow: 0 24px 90px rgba(16,44,27,0.3); }
-.rules-dialog[open] { display: flex; flex-direction: column; }
-.rules-dialog::backdrop { background: rgba(22,49,35,0.55); backdrop-filter: blur(5px); }
+.rules-dialog { position: fixed; z-index: 30; inset: 0; margin: 0; width: 100%; height: 100vh; height: 100dvh; max-height: none; padding: 0; border: 0; border-radius: 0; background: #fffdf7; color: var(--ink); box-shadow: none; overflow: hidden; }
+.rules-dialog:not(.hidden) { display: flex; flex-direction: column; }
 .rules-dialog-header { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 20px 26px; background: #edf6e6; border-bottom: 1px solid #dce8d7; }
 .rules-dialog-header span { font-size: 0.75rem; color: var(--forest-700); }
 .rules-dialog-header h2 { margin-top: 4px; font-size: 1.3rem; }
 .close-rules { flex: 0 0 38px; height: 38px; border: 1px solid #cdddce; border-radius: 50%; color: var(--forest-800); background: #fff; cursor: pointer; }
-.rules-dialog-content { overflow-y: auto; overscroll-behavior: contain; padding: 24px 26px; }
+.rules-dialog-content { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 24px 26px; }
 .rules-dialog .rules-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; padding: 0; list-style: none; font-size: 0.86rem; line-height: 1.7; }
 .control-diagrams { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .control-diagrams > div { padding: 14px 10px; border: 1px solid #dce8d7; border-radius: 14px; text-align: center; background: #f5f9f0; font-size: 0.85rem; }
@@ -753,14 +752,9 @@ body.rules-open { overflow: hidden; }
   body:has(#landingView:not(.hidden)) { padding: 0; }
   #landingView:not(.hidden) { padding: 4px 8px; }
   .rules-dialog {
-    inset: auto;
-    top: 0;
-    left: 100vw;
-    right: auto;
-    bottom: auto;
-    width: 100dvh;
-    height: 100vw;
-    transform: rotate(90deg);
-    transform-origin: top left;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: none;
   }
 }

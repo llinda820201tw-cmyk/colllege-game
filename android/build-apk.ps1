@@ -12,7 +12,7 @@ $assetDir = Join-Path $assetPackage 'assets'
 foreach ($dir in @($buildDir, "$buildDir/assets", "$buildDir/classes", "$buildDir/dex", $privateDir, $outputDir)) { New-Item -ItemType Directory -Force -Path $dir | Out-Null }
 function Run-Tool($tool, $toolArgs) { & $tool @toolArgs; if ($LASTEXITCODE -ne 0) { throw "Build failed: $tool" } }
 New-Item -ItemType Directory -Force -Path "$assetDir/assets" | Out-Null
-Get-ChildItem -LiteralPath $projectRoot -File | Where-Object { $_.Extension -in @('.html','.css','.js','.png','.jpg') } | Copy-Item -Destination $assetDir
+Get-ChildItem -LiteralPath $projectRoot -File | Where-Object { $_.Extension -in @('.html','.css','.js','.png','.jpg','.webmanifest') } | Copy-Item -Destination $assetDir
 Get-ChildItem -LiteralPath "$projectRoot/assets" | Copy-Item -Destination "$assetDir/assets" -Recurse -Force
 Run-Tool "$buildTools/aapt2.exe" @('compile','--dir',"$PSScriptRoot/res",'-o',"$buildDir/resources.zip")
 Run-Tool "$buildTools/aapt2.exe" @('link','-o',"$buildDir/unsigned.apk",'--manifest',"$PSScriptRoot/AndroidManifest.xml",'-I',$androidJar,"$buildDir/resources.zip")

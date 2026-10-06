@@ -55,9 +55,9 @@
   const skillProgressFill = document.getElementById("skillProgressFill");
   const openingHint = document.getElementById("openingHint");
   const openingSkillHint = document.getElementById("openingSkillHint");
-  const rulesDialog = document.getElementById("rulesDialog");
+  const rulesView = document.getElementById("rulesView");
   const openRulesBtn = document.getElementById("openRulesBtn");
-  const closeRulesBtn = document.getElementById("closeRulesBtn");
+  const backToHomeBtn = document.getElementById("backToHomeBtn");
   const touchButtons = {
     left: document.getElementById("touchLeftBtn"),
     right: document.getElementById("touchRightBtn"),
@@ -67,7 +67,7 @@
   const touchDevice = window.matchMedia?.("(any-pointer: coarse)")?.matches || false;
   let fullscreenRequestPending = false;
   function enterPhoneFullscreen() {
-    if (!touchDevice || document.fullscreenElement || fullscreenRequestPending || !document.documentElement.requestFullscreen) return;
+    if (!touchDevice || location.hostname === "appassets.androidplatform.net" || document.fullscreenElement || window.matchMedia?.("(display-mode: fullscreen)")?.matches || navigator.standalone === true || fullscreenRequestPending || !document.documentElement.requestFullscreen) return;
     try {
       fullscreenRequestPending = true;
       const request = document.documentElement.requestFullscreen();
@@ -603,7 +603,8 @@
   function startGame() {
     if (homeTimer) clearTimeout(homeTimer);
     enterPhoneFullscreen();
-    if (rulesDialog.open) rulesDialog.close();
+    rulesView.classList.add("hidden");
+    document.body.classList.remove("rules-open");
     landingView.classList.add("hidden");
     gameView.classList.remove("hidden");
     resizeGameViewport();
@@ -1023,7 +1024,13 @@
   }
 
   window.addEventListener("keydown", (e) => {
-    if (rulesDialog.open) return;
+    if (!rulesView.classList.contains("hidden")) {
+      if (e.code === "Escape") {
+        e.preventDefault();
+        backToHomeBtn.click();
+      }
+      return;
+    }
     if (state !== STATE.PLAYING) return;
     const skillKey = CHARACTERS[selectedCharacter].key;
     const isSkillKey = e.code === "KeyE" || e.code === `Digit${skillKey}` || e.code === `Numpad${skillKey}`;
@@ -1087,17 +1094,16 @@
   }
   openRulesBtn.addEventListener("click", () => {
     enterPhoneFullscreen();
-    rulesDialog.showModal();
+    landingView.classList.add("hidden");
+    rulesView.classList.remove("hidden");
     document.body.classList.add("rules-open");
+    document.getElementById("rulesTitle").focus();
   });
-  closeRulesBtn.addEventListener("click", () => rulesDialog.close());
-  rulesDialog.addEventListener("close", () => {
+  backToHomeBtn.addEventListener("click", () => {
+    rulesView.classList.add("hidden");
     document.body.classList.remove("rules-open");
-    if (state === STATE.START) openRulesBtn.focus();
-  });
-  rulesDialog.addEventListener("click", (e) => {
-    const bounds = rulesDialog.getBoundingClientRect();
-    if (e.target === rulesDialog && (e.clientX < bounds.left || e.clientX > bounds.right || e.clientY < bounds.top || e.clientY > bounds.bottom)) rulesDialog.close();
+    landingView.classList.remove("hidden");
+    openRulesBtn.focus();
   });
   const releaseInputs = () => { keys.left = false; keys.right = false; clearTouchInput(); };
   window.addEventListener("blur", releaseInputs);

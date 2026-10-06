@@ -1,0 +1,16 @@
+{
+  "id": "./",
+  "name": "Eco-Mario 環保大冒險",
+  "short_name": "Eco-Mario",
+  "description": "選擇角色，展開環保冒險。",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "background_color": "#d9edbd",
+  "theme_color": "#d9edbd",
+  "icons": [
+    { "src": "pwa-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "pwa-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

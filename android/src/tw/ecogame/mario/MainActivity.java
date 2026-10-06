@@ -33,7 +33,7 @@ public class MainActivity extends Activity {
                 String path = request.getUrl().getPath();
                 if (!HOST.equals(request.getUrl().getHost()) || path == null || !path.startsWith("/assets/") || path.contains("..")) return missing();
                 String file = path.substring(8);
-                String mime = file.endsWith(".html") ? "text/html" : file.endsWith(".js") ? "application/javascript" : file.endsWith(".css") ? "text/css" : file.endsWith(".png") ? "image/png" : file.endsWith(".jpg") ? "image/jpeg" : "application/octet-stream";
+                String mime = file.endsWith(".html") ? "text/html" : file.endsWith(".js") ? "application/javascript" : file.endsWith(".css") ? "text/css" : file.endsWith(".webmanifest") ? "application/manifest+json" : file.endsWith(".png") ? "image/png" : file.endsWith(".jpg") ? "image/jpeg" : "application/octet-stream";
                 try { return new WebResourceResponse(mime, "UTF-8", getAssets().open(file)); }
                 catch (IOException e) { return missing(); }
             }
@@ -52,7 +52,7 @@ public class MainActivity extends Activity {
     @Override protected void onPause() { game.onPause(); super.onPause(); }
     @Override protected void onResume() { super.onResume(); if (game != null) game.onResume(); }
     @Override public void onBackPressed() {
-        game.evaluateJavascript("(function(){var g=document.getElementById('gameView');if(g&&!g.classList.contains('hidden')){document.getElementById('quickRestartBtn').click();return true;}return false;})()", result -> { if (!"true".equals(result)) finish(); });
+        game.evaluateJavascript("(function(){var r=document.getElementById('rulesView');if(r&&!r.classList.contains('hidden')){document.getElementById('backToHomeBtn').click();return true;}var g=document.getElementById('gameView');if(g&&!g.classList.contains('hidden')){document.getElementById('quickRestartBtn').click();return true;}return false;})()", result -> { if (!"true".equals(result)) finish(); });
     }
     @Override protected void onDestroy() { game.destroy(); super.onDestroy(); }
 }

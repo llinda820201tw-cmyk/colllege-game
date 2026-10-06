@@ -96,18 +96,29 @@
   };
 
   charImages.char17.src = "17.png";
-  charImages.char18.src = "18.png";
-  charImages.char19.src = "19.png";
+  const charFrames = {
+    char17: [charImages.char17],
+    char18: [],
+    char19: []
+  };
+  ["girl-run-1.svg", "girl-run-2.svg"].forEach((file) => {
+    const frame = new Image();
+    frame.src = `assets/characters/${file}`;
+    charFrames.char18.push(frame);
+  });
+  ["boy-run-1.svg", "boy-run-2.svg"].forEach((file) => {
+    const frame = new Image();
+    frame.src = `assets/characters/${file}`;
+    charFrames.char19.push(frame);
+  });
+  charImages.char18 = charFrames.char18[0];
+  charImages.char19 = charFrames.char19[0];
   const itemImages = {};
   [21, 22, 23, 25, 26, 27, 28].forEach((id) => {
     itemImages[id] = new Image();
     itemImages[id].src = `${id}.png`;
   });
 
-  // 19.png 的原始素材右側帶有白色直線，灰髮男孩使用裁切區域避開它。
-  const charCrop = {
-    char19: { sx: 540, sy: 220, sw: 165, sh: 270 }
-  };
   const SCENES = [
     { id: "city", name: "🏙 繽紛城市", threshold: 0, surface: 0.75, ground: "#c5c4b3", soil: "#94704e", obstacleChance: 0.48, recycleChance: 0.68, spacing: 220, safeItems: [25, 27], dangerItems: [22, 23], obstacle: "chimney", hint: "穿越街道，回收紙箱與鋁罐。", rainbowX: 0.52 },
     { id: "river", name: "🏞 山谷河岸", threshold: 600, surface: 0.80, ground: "#a7ce67", soil: "#be864e", obstacleChance: 0.38, recycleChance: 0.75, spacing: 250, safeItems: [26, 27], dangerItems: [21, 28], obstacle: "rock", hint: "高低石頭交錯：小石頭單跳，高石柱二段跳！", rainbowX: 0.50 },
@@ -781,7 +792,6 @@
   ctx.save();
   let offsetY = 0;
   let rotation = 0;
-  let girlRunPhase = 0;
 
   if (player.vy !== 0) {
     // 空中跳躍：身體微往前傾斜，高度固定
@@ -793,7 +803,6 @@
     offsetY = -Math.abs(Math.sin(runPhase)) * (isTwinTailGirl ? 9 : 5);
     rotation = Math.sin(gameTime * (isTwinTailGirl ? 0.022 : 0.006)) * (isTwinTailGirl ? 0.08 : 0.03);
     if (isTwinTailGirl) {
-      girlRunPhase = runPhase;
       // 女孩跑步時身體持續朝前傾，並隨步伐上下彈動。
       rotation += player.facing === "right" ? -0.13 : 0.13;
     }
@@ -807,27 +816,15 @@
   if (shouldFlip) {
     ctx.scale(-1, 1);
   }
-  if (selectedCharacter === "char18" && player.vx !== 0 && player.vy === 0) {
-    const stride = Math.sin(girlRunPhase);
-    ctx.transform(1, 0, player.facing === "right" ? -0.2 : 0.2, 1, 0, 0);
-    ctx.scale(1 + Math.abs(stride) * 0.035, 1 - Math.abs(stride) * 0.045);
-  }
   ctx.rotate(rotation);
 
-  const currentImg = charImages[selectedCharacter];
+  const frames = charFrames[selectedCharacter] || [];
+  const frameIndex = player.vx !== 0 && player.vy === 0
+    ? Math.floor(gameTime / 120) % Math.max(frames.length, 1)
+    : 0;
+  const currentImg = frames[frameIndex] || charImages[selectedCharacter];
   if (currentImg && currentImg.complete && currentImg.naturalWidth !== 0) {
-    const crop = charCrop[selectedCharacter];
-    if (crop) {
-      // 維持原本 240x240 的角色尺寸，只裁掉右側白線所在的區域。
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(-120, -120, 132, 240);
-      ctx.clip();
-      ctx.drawImage(currentImg, -120, -120 + 8, 240, 240);
-      ctx.restore();
-    } else {
-      ctx.drawImage(currentImg, -120, -120 + 8, 240, 240);
-    }
+    ctx.drawImage(currentImg, -120, -120 + 8, 240, 240);
   } else {
     ctx.fillStyle = "#FFC0CB";
     ctx.fillRect(-player.w / 2, -player.h / 2, player.w, player.h);

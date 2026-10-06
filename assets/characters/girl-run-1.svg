@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
+ <defs>
+  <linearGradient id="hair" x2="0" y2="1"><stop stop-color="#9b5b9d"/><stop offset="1" stop-color="#59345f"/></linearGradient>
+  <linearGradient id="dress" x2="0" y2="1"><stop stop-color="#76d9bd"/><stop offset="1" stop-color="#31a58a"/></linearGradient>
+  <linearGradient id="skin" x2="0" y2="1"><stop stop-color="#ffe2c5"/><stop offset="1" stop-color="#f5b996"/></linearGradient>
+ </defs>
+ <g stroke="#493650" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- back ponytails and ribbons -->
+  <path fill="url(#hair)" d="M91 69Q69 58 73 91Q72 111 59 125Q79 132 91 113L107 83Z"/>
+  <path fill="url(#hair)" d="M151 65Q176 52 178 83Q180 103 195 113Q180 130 163 112L147 83Z"/>
+  <path fill="#ffd56a" d="M78 72l-15-12 3 20-12 10 22 2M165 68l16-13-2 21 14 8-22 4"/>
+  <!-- stride legs -->
+  <path fill="url(#skin)" d="M113 167q9 13 4 28l-19 15q-8 7-1 12 8 4 19-4l24-18q7-6 4-15l-2-17Z"/>
+  <path fill="#514477" d="M95 204q-9 6-15 13-5 7 5 10l22-1q7-2 6-8l-5-9Z"/>
+  <path fill="url(#skin)" d="M139 165q-5 17 5 28l22 7q10 4 7 11-4 7-17 4l-30-7q-9-3-8-13l2-25Z"/>
+  <path fill="#514477" d="M164 196q12 1 21 6 8 5 2 11l-20 8q-8 2-11-4l-1-12Z"/>
+  <!-- running arms -->
+  <path fill="url(#skin)" d="M104 111q-16-5-25 6l-12 17q-5 9 3 12 7 3 13-5l17-9 14 5Z"/>
+  <path fill="url(#skin)" d="M150 108q17-4 24 8l11 18q4 9-4 12-7 2-12-6l-15-11-15 3Z"/>
+  <!-- leaning torso -->
+  <path fill="url(#dress)" d="M105 99q19-10 45 0l13 52q-27 16-61 2l9-31Z"/>
+  <path fill="#fff4da" d="M120 104l12 7 11-8-3 25-11 9-9-10Z"/>
+  <path fill="#ffcf69" d="M132 119q-10 4-8 13 8 2 12-6 5 9 13 5-1-12-12-12l-3 5Z" stroke="none"/>
+  <path fill="#6acb9f" d="M132 128q-2 9-9 12" fill-opacity=".7"/>
+  <path fill="#5d477c" d="M101 148q28 10 61-1l7 25q-34 14-75 0Z"/>
+  <path fill="#f5c7e7" d="M102 159l-5 13m18-11-2 16m20-16 1 15m16-20 5 13" stroke-width="2"/>
+  <!-- head, turned three-quarter to the right -->
+  <path fill="url(#skin)" d="M91 63q4-33 42-37 39 4 44 39l-3 31q-11 28-39 31-31-4-41-31Z"/>
+  <path fill="url(#hair)" d="M89 75Q78 37 106 24q25-20 54 0 24 15 19 52l-13-15-9-20q-9 17-31 18-18 1-31 16Z"/>
+  <path fill="#68416e" d="M102 49q-6 17-2 29l-12 11q-9-27 4-44Zm61-8q18 18 13 43l-10-8-4-21Z" stroke="none"/>
+  <path fill="#fff" d="M143 75q12-8 20 1 2 9-7 13-11 1-13-7Z" stroke="none"/>
+  <ellipse cx="154" cy="82" rx="4.4" ry="6.3" fill="#49334c" stroke="none"/><circle cx="155.5" cy="79.5" r="1.7" fill="#fff" stroke="none"/>
+  <path fill="none" d="M168 91q8 0 10-4m-24 11q8 7 16 0" stroke="#bd625f" stroke-width="2.5"/>
+  <ellipse cx="164" cy="99" rx="7" ry="3.5" fill="#f28e91" stroke="none" opacity=".72"/>
+  <path fill="#ffd56a" d="M111 28q7-12 16-7l-2 13-14 5m35-16q9-8 16 2l-9 11-12-2"/>
+ </g>
+</svg>

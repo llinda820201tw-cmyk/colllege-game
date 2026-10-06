@@ -448,6 +448,7 @@ kbd { display: inline-block; min-width: 23px; padding: 1px 6px; border: 1px soli
 .character-portrait { display: block; position: relative; width: 100%; height: 165px; overflow: hidden; border-radius: 14px; background: transparent; }
 .character-portrait img { position: absolute; width: 850px; max-width: none; height: auto; left: 50%; top: -145px; transform: translateX(-50%); pointer-events: none; }
 .portrait-char19 img { clip-path: inset(0 45% 0 0); }
+.character-portrait.portrait-new img { width: 100% !important; height: 100%; object-fit: contain; left: 0; top: 0; transform: none; }
 .character-ability { font-size: 0.88rem; font-weight: 800; }
 .character-detail { font-size: 0.78rem; color: var(--muted); font-weight: 500; }
 .character-key { font-size: 0.76rem; color: var(--forest-700); }

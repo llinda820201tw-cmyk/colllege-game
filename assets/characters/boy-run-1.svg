@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
+ <defs><linearGradient id="hair" x2="0" y2="1"><stop stop-color="#d9e4f1"/><stop offset="1" stop-color="#71829a"/></linearGradient><linearGradient id="hood" x2="0" y2="1"><stop stop-color="#fff7e9"/><stop offset="1" stop-color="#e7eef0"/></linearGradient><linearGradient id="skin" x2="0" y2="1"><stop stop-color="#ffe5ca"/><stop offset="1" stop-color="#f5bd99"/></linearGradient></defs>
+ <g stroke="#39465b" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- running legs and green sneakers -->
+  <path fill="url(#skin)" d="M113 164q11 10 5 25l-18 13q-9 7-2 13 7 5 18-2l26-17q8-5 5-14l-5-19Z"/><path fill="#405576" d="M98 197q-11 6-18 14-6 7 4 11l23 1q8-1 8-8l-4-11Z"/><path fill="#70cf88" d="M79 211l31 2 4 8-35-1Z"/>
+  <path fill="url(#skin)" d="M139 164q-4 17 7 27l23 5q10 3 7 11-4 7-17 5l-31-6q-9-2-9-12l2-25Z"/><path fill="#405576" d="M164 194q13 0 22 5 9 5 3 12l-20 10q-8 3-12-3l-2-12Z"/><path fill="#70cf88" d="M159 213l31-9 5 7-33 12Z"/>
+  <!-- swinging arms -->
+  <path fill="url(#skin)" d="M104 111q-16-6-25 6l-14 18q-5 8 3 12 7 3 13-5l19-10 13 5Z"/><path fill="url(#skin)" d="M150 108q18-3 25 10l10 19q4 9-4 12-7 2-12-6l-15-12-15 3Z"/>
+  <!-- eco hoodie -->
+  <path fill="url(#hood)" d="M106 99q19-10 43-1l14 52q-26 16-62 2l8-31Z"/><path fill="#82d895" d="M131 116q-12 4-10 17 9 3 14-7 5 9 15 4-1-13-15-13l-4 6Z" stroke="none"/><path d="M131 130q-1 9-10 13" fill="none" stroke="#53a96a" stroke-width="2"/>
+  <path fill="#f5aa62" d="M105 111l9 7-4 14-10-8m51-17-8 9 5 12 10-7" stroke-width="2.5"/>
+  <path fill="#405576" d="M101 150q29 11 62-1l7 22q-31 15-75 0Z"/><path fill="#a8c8ea" d="M115 154l-3 16m22-14 1 17m17-20 5 14" stroke-width="2"/>
+  <!-- head turned to the right -->
+  <path fill="url(#skin)" d="M92 64q5-34 41-38 40 3 46 40l-4 29q-12 28-40 31-30-4-41-31Z"/><path fill="url(#hair)" d="M88 76Q76 36 105 23q28-19 56 1 23 16 17 54l-13-14-7-22q-12 18-31 20-21 1-31 16Z"/><path fill="#71829a" d="M98 52q-8 14-4 28l-11 10q-8-27 4-44Zm59-14q18 18 15 43l-10-8-6-23Z" stroke="none"/>
+  <path fill="#fff" d="M143 75q12-8 20 1 2 9-7 13-11 1-13-7Z" stroke="none"/><ellipse cx="154" cy="82" rx="4.5" ry="6.5" fill="#36435a" stroke="none"/><circle cx="155.5" cy="79.5" r="1.8" fill="#fff" stroke="none"/><path fill="none" d="M169 91q7 0 9-4m-25 11q8 7 16 0" stroke="#bd625f" stroke-width="2.5"/><ellipse cx="164" cy="99" rx="7" ry="3.5" fill="#ef9990" stroke="none" opacity=".8"/>
+  <path fill="#71829a" d="M99 37l-8-17 22 5 12-13 10 17m7-9 18-7 9 22"/>
+  <path fill="#ffce68" d="M114 104q8-6 17-2l-1 8-12 3Z"/>
+ </g>
+</svg>

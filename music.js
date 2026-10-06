@@ -3,6 +3,7 @@
   let context = null;
   let master = null;
   let compressor = null;
+  let noiseBuffer = null;
   let timer = null;
   let nextStepAt = 0;
   let stepIndex = 0;
@@ -26,6 +27,9 @@
       compressor.ratio.value = 2.5;
       compressor.attack.value = 0.012;
       compressor.release.value = 0.22;
+      noiseBuffer = context.createBuffer(1, Math.ceil(context.sampleRate * 0.2), context.sampleRate);
+      const noise = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < noise.length; i += 1) noise[i] = Math.random() * 2 - 1;
       master.connect(compressor);
       compressor.connect(context.destination);
       return true;
@@ -69,6 +73,23 @@
     oscillator.stop(at + 0.21);
   }
 
+  function noiseHit(at, volume, length, filterType, cutoff) {
+    const source = context.createBufferSource();
+    const filter = context.createBiquadFilter();
+    const envelope = context.createGain();
+    source.buffer = noiseBuffer;
+    filter.type = filterType;
+    filter.frequency.setValueAtTime(cutoff, at);
+    filter.Q.value = filterType === "bandpass" ? 0.8 : 0.5;
+    envelope.gain.setValueAtTime(volume, at);
+    envelope.gain.exponentialRampToValueAtTime(0.0001, at + length);
+    source.connect(filter);
+    filter.connect(envelope);
+    envelope.connect(master);
+    source.start(at);
+    source.stop(at + length + 0.01);
+  }
+
   function softPad(root, at, barDuration, volume) {
     [root + 12, root + 16, root + 19].forEach((note, index) => {
       const oscillator = context.createOscillator();
@@ -90,29 +111,34 @@
     const eighth = index % 8;
     const bar = Math.floor(index / 8) % chords.length;
     const stage = score >= 1600 ? 3 : score >= 1000 ? 2 : score >= 600 ? 1 : 0;
-    const bpm = 92 + Math.min(1, score / 2000) * 26;
+    const bpm = 118 + Math.min(1, score / 2000) * 34;
     const stepDuration = 30 / bpm;
     const barDuration = stepDuration * 8;
     const root = chords[bar];
 
-    if (eighth === 0) softPad(root, at, barDuration, 0.014 + stage * 0.001);
+    if (eighth === 0) softPad(root, at, barDuration, 0.011 + stage * 0.001);
 
     const beat = eighth % 2 === 0;
-    if (beat && (eighth === 0 || eighth === 4 || (stage >= 3 && eighth === 6))) {
-      kick(at, 0.075 + stage * 0.007);
-      pluck(root, at, 0.3, 0.035 + stage * 0.004, "sine");
+    if (beat) {
+      const downbeat = eighth === 0 || eighth === 4;
+      kick(at, (downbeat ? 0.066 : 0.046) + stage * 0.004);
+      if (downbeat) pluck(root, at, 0.25, 0.03 + stage * 0.003, "sine");
+      else pluck(root + 7, at, 0.18, 0.018 + stage * 0.002, "sine");
     }
+
+    if (eighth === 2 || eighth === 6) noiseHit(at, 0.038 + stage * 0.004, 0.095, "bandpass", 1700);
+    if (eighth % 2 === 1) noiseHit(at, 0.008 + stage * 0.002, 0.025, "highpass", 6200);
 
     const degree = melody[index % melody.length];
     if (degree >= 0) {
-      pluck(72 + scale[degree], at, 0.2, 0.105 + stage * 0.008, "triangle");
-      if (stage >= 2 && eighth === 6) pluck(79 + scale[(degree + 2) % scale.length], at + 0.025, 0.13, 0.036, "sine");
+      pluck(72 + scale[degree], at, 0.17, 0.1 + stage * 0.007, "triangle");
+      if (stage >= 2 && (eighth === 2 || eighth === 6)) pluck(79 + scale[(degree + 2) % scale.length], at + stepDuration * 0.5, 0.1, 0.034, "sine");
     } else if (stage >= 1 && eighth % 2 === 1 && eighth !== 7) {
       pluck(84 + scale[(index + bar) % scale.length], at, 0.12, 0.028 + stage * 0.004, "sine");
     }
 
     if (beat && (eighth === 2 || eighth === 6)) {
-      pluck(91, at, 0.055, 0.016 + stage * 0.002, "sine");
+      pluck(91, at, 0.045, 0.014 + stage * 0.002, "sine");
     }
     return stepDuration;
   }
@@ -134,7 +160,7 @@
       if (!enabled || playing) return;
       playing = true;
       master.gain.cancelScheduledValues(context.currentTime);
-      master.gain.setTargetAtTime(0.14, context.currentTime, 0.12);
+      master.gain.setTargetAtTime(0.12, context.currentTime, 0.12);
       nextStepAt = context.currentTime + 0.06;
       stepIndex = 0;
       scheduleAhead();

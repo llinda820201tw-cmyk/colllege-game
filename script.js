@@ -101,8 +101,8 @@
     char18: [new Image()],
     char19: [new Image()]
   };
-  charFrames.char18[0].src = "assets/characters/runner-18.png";
-  charFrames.char19[0].src = "assets/characters/runner-19.png";
+  charFrames.char18[0].src = "assets/characters/character-18-cutout-v2.png";
+  charFrames.char19[0].src = "assets/characters/character-19-cutout-v2.png";
   charImages.char18 = charFrames.char18[0];
   charImages.char19 = charFrames.char19[0];
   const itemImages = {};

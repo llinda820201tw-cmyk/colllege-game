@@ -649,26 +649,27 @@ body.rules-open { overflow: hidden; }
     height: 100vw;
     min-height: 0;
     padding: 8px 12px;
-    overflow: auto;
+    overflow: hidden;
     transform: rotate(90deg);
     transform-origin: top left;
   }
-  .landing-container { width: 100%; min-height: 100%; justify-content: center; padding: 4px 8px; }
+  .landing-container { width: 100%; height: 100%; min-height: 0; justify-content: center; padding: 2px 8px; }
   .landing-container > .title-block { margin-bottom: 4px; }
   .landing-container > .title-block h1 { font-size: 2rem; }
   .landing-container > .title-block p { font-size: 0.8rem; }
-  .landing-card { width: min(100%, 900px); padding: 8px 14px; }
-  .landing-card h2 { margin-bottom: 6px; font-size: 1rem; }
-  .landing-card .character-select { margin-bottom: 8px; }
-  .landing-card .char-options { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-  .landing-card .character-card { grid-template-columns: 58px 1fr; column-gap: 8px; row-gap: 2px; padding: 6px; font-size: 0.72rem; }
-  .landing-card .character-portrait { grid-row: 1 / 6; width: 58px; height: 74px; }
-  .landing-card .character-portrait img { width: 420px; top: -72px; }
-  .landing-card .character-card strong { font-size: 0.78rem; }
-  .landing-card .character-ability, .landing-card .character-detail, .landing-card .character-key { font-size: 0.62rem; }
-  .landing-card .home-quick-tip { margin: 6px 0; font-size: 0.68rem; }
-  .landing-card .btn-start { min-height: 38px; padding: 7px 20px; }
-  .landing-card .btn-rules { padding: 7px 14px; font-size: 0.75rem; }
+  .landing-card { width: min(100%, 900px); padding: 4px 10px; }
+  .landing-card h2 { margin-bottom: 4px; font-size: 0.92rem; }
+  .landing-card .character-select { margin-bottom: 5px; }
+  .landing-card .char-options { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  .landing-card .character-card { grid-template-columns: 48px minmax(0, 1fr); column-gap: 6px; row-gap: 1px; padding: 4px; font-size: 0.66rem; }
+  .landing-card .character-portrait { grid-row: 1 / 6; width: 48px; height: 60px; }
+  .landing-card .character-portrait img { width: 350px; top: -60px; }
+  .landing-card .character-card strong { font-size: 0.7rem; }
+  .landing-card .character-ability, .landing-card .character-detail, .landing-card .character-key { font-size: 0.56rem; line-height: 1.15; }
+  .landing-card .character-card::after { padding-top: 1px; font-size: 0.58rem; }
+  .landing-card .home-quick-tip { margin: 4px 0; font-size: 0.62rem; line-height: 1.25; }
+  .landing-card .btn-start { min-height: 34px; padding: 5px 18px; }
+  .landing-card .btn-rules { padding: 6px 12px; font-size: 0.7rem; }
   .bg-deco { opacity: 0.35; }
   .game-page:not(.hidden) { height: 100%; }
   .game-page .game-stage { height: 100%; }
@@ -676,4 +677,28 @@ body.rules-open { overflow: hidden; }
   .rules-dialog-content { min-height: 0; }
   .control-diagrams { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .scene-gallery { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* 手機橫向窄高度時，讓首頁完整置入可視範圍。 */
+@media (max-height: 520px) and (orientation: landscape) and (max-width: 900px) and (any-pointer: coarse) {
+  body { min-height: 0; height: 100dvh; overflow: hidden; padding: 4px 12px; }
+  .landing-container { height: 100%; min-height: 0; justify-content: center; padding: 0 8px; }
+  .landing-container > .title-block { margin-bottom: 4px; }
+  .landing-container > .title-block h1 { margin-bottom: 2px; font-size: 1.65rem; }
+  .landing-container > .title-block .brand-caption { display: inline; margin: 0 0 0 8px; font-size: 0.72rem; letter-spacing: 0.08em; }
+  .landing-container > .title-block p { font-size: 0.72rem; line-height: 1.2; }
+  .landing-card { width: min(100%, 840px); padding: 2px 10px; }
+  .landing-card h2 { margin-bottom: 4px; font-size: 0.95rem; }
+  .landing-card .character-select { margin-bottom: 5px; }
+  .landing-card .char-options { gap: 7px; }
+  .landing-card .character-card { display: grid; grid-template-columns: 50px minmax(0, 1fr); grid-template-rows: repeat(5, auto); column-gap: 6px; row-gap: 1px; padding: 4px; }
+  .landing-card .character-portrait { grid-row: 1 / 6; width: 50px; height: 62px; }
+  .landing-card .character-portrait img { width: 360px; top: -62px; }
+  .landing-card .character-card strong { font-size: 0.72rem; }
+  .landing-card .character-ability, .landing-card .character-detail, .landing-card .character-key { font-size: 0.58rem; line-height: 1.15; }
+  .landing-card .character-card::after { padding-top: 1px; font-size: 0.6rem; }
+  .landing-card .home-quick-tip { margin: 4px 0; font-size: 0.65rem; line-height: 1.25; }
+  .landing-card .btn-start { min-height: 34px; padding: 5px 18px; }
+  .landing-card .btn-rules { padding: 6px 12px; font-size: 0.7rem; }
+  .bg-deco { opacity: 0.3; }
 }

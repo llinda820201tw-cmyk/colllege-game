@@ -1,10 +1,10 @@
-Eco-Mario Android 安裝包 1.0.2
+Eco-Mario Android 安裝包 1.0.3
 
-安裝檔：專案 downloads/Eco-Mario-1.0.2.apk
+安裝檔：專案 downloads/Eco-Mario-1.0.3.apk
 支援：Android 8.0 以上；請使用已更新的 Android System WebView。
 遊戲程式與圖片都包含在 APK 內，可以離線遊玩；支援橫向、直向全螢幕，跟隨手機方向設定。
 若要旋轉，請開啟手機的「自動旋轉」。轉向時會保留本局進度。
-1.0.2 使用與 1.0.0 相同的簽章，可直接安裝更新，無須先移除舊版。
+1.0.3 使用與 1.0.0 相同的簽章，可直接安裝更新，無須先移除舊版。
 手機返回鍵：遊戲中回到選角首頁，首頁再按返回則關閉 App。
 APK 不適用於 iPhone 或直接安裝於 Windows。
 

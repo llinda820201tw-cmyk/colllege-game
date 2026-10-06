@@ -2,6 +2,7 @@
   const landingView = document.getElementById("landingView");
   const gameView = document.getElementById("gameView");
   const enterGameBtn = document.getElementById("enterGameBtn");
+  const musicToggleButtons = document.querySelectorAll("[data-music-toggle]");
 
   const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
@@ -595,6 +596,7 @@
     gameOverText.textContent = reason;
     finalScoreEl.textContent = Math.floor(world.score);
     saveScore(world.score);
+    window.ecoMusic?.stop();
     gameOverOverlay.classList.remove("hidden");
     if (homeTimer) clearTimeout(homeTimer);
     if (reason === "時間到！") homeTimer = setTimeout(goToHome, 1800);
@@ -610,6 +612,7 @@
     resizeGameViewport();
     resetWorld();
     state = STATE.PLAYING;
+    window.ecoMusic?.start(() => world.score);
     updateAdventureHud();
     gameOverOverlay.classList.add("hidden");
   }
@@ -617,6 +620,7 @@
   function goToHome() {
     if (homeTimer) clearTimeout(homeTimer);
     state = STATE.START;
+    window.ecoMusic?.stop();
     clearTouchInput();
     keys.left = false;
     keys.right = false;
@@ -1086,7 +1090,10 @@
   });
   if (touchDevice) {
     landingView.addEventListener("pointerdown", () => {
-      if (state === STATE.START) enterPhoneFullscreen();
+      if (state === STATE.START) {
+        window.ecoMusic?.unlock();
+        enterPhoneFullscreen();
+      }
     }, { capture: true });
     document.querySelector(".opening-hint strong").textContent = "按住 ◀ ▶ 移動";
     document.querySelector(".opening-hint span").textContent = "點跳躍 · 空中再點一次二段跳";
@@ -1107,7 +1114,31 @@
   });
   const releaseInputs = () => { keys.left = false; keys.right = false; clearTouchInput(); };
   window.addEventListener("blur", releaseInputs);
-  document.addEventListener("visibilitychange", () => { if (document.hidden) releaseInputs(); });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      releaseInputs();
+      window.ecoMusic?.stop();
+    } else if (state === STATE.PLAYING) window.ecoMusic?.start(() => world.score);
+  });
+
+  musicToggleButtons.forEach((button) => {
+    const refresh = () => {
+      const enabled = window.ecoMusic?.enabled !== false;
+      button.textContent = enabled ? "♫ 音樂：開" : "♫ 音樂：關";
+      button.setAttribute("aria-pressed", String(enabled));
+      button.setAttribute("aria-label", enabled ? "關閉背景音樂" : "開啟背景音樂");
+    };
+    button.addEventListener("click", () => {
+      const enabled = window.ecoMusic?.setEnabled(!window.ecoMusic.enabled) ?? false;
+      if (enabled && state === STATE.PLAYING) window.ecoMusic.start(() => world.score);
+      musicToggleButtons.forEach((toggle) => {
+        toggle.textContent = enabled ? "♫ 音樂：開" : "♫ 音樂：關";
+        toggle.setAttribute("aria-pressed", String(enabled));
+        toggle.setAttribute("aria-label", enabled ? "關閉背景音樂" : "開啟背景音樂");
+      });
+    });
+    refresh();
+  });
 
   function resizeGameViewport() {
     if (gameView.classList.contains("hidden")) return;

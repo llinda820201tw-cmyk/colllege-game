@@ -10,7 +10,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="pwa-icon-192.png" />
-  <link rel="stylesheet" href="style.css?v=20261006-pwa-pages" />
+  <link rel="stylesheet" href="style.css?v=20261006-adaptive-music" />
 </head>
 <body>
 
@@ -46,7 +46,10 @@
       </div>
       <button type="button" class="btn-start" id="enterGameBtn">🚀 開始遊戲 <span>START</span></button>
       <p class="home-quick-tip">◄ ► 移動 · 空白鍵二段跳 · E 使用目前角色技能</p>
-      <button type="button" class="btn-rules" id="openRulesBtn" aria-haspopup="dialog">📖 遊戲規則與操作圖解</button>
+      <div class="home-actions">
+        <button type="button" class="btn-rules" id="openRulesBtn" aria-controls="rulesView">📖 遊戲規則與操作圖解</button>
+        <button type="button" class="music-toggle" data-music-toggle aria-label="關閉背景音樂" aria-pressed="true">♫ 音樂：開</button>
+      </div>
     </section>
   </main>
 
@@ -54,6 +57,7 @@
   <!-- ================= 遊戲區塊 ================= -->
   <div class="game-page hidden" id="gameView">
     <button type="button" class="fullscreen-button" id="fullscreenBtn">⛶ 全螢幕</button>
+    <button type="button" class="music-toggle game-music-toggle" data-music-toggle aria-label="關閉背景音樂" aria-pressed="true">♫ 音樂：開</button>
     <header class="title-block">
       <h1>Eco-Mario</h1>
       <p>左右自由移動，清理路上垃圾，還給大地潔淨！</p>
@@ -163,6 +167,7 @@
     </div>
   </section>
 
-  <script src="script.js?v=20261006-pwa-pages"></script>
+  <script src="music.js?v=20261006-adaptive-music"></script>
+  <script src="script.js?v=20261006-adaptive-music"></script>
 </body>
 </html>

@@ -796,11 +796,7 @@
   const cy = player.y + player.h / 2 + offsetY;
   ctx.translate(cx, cy);
 
-  // 灰髮男孩的原圖朝左，因此行進方向要用相反的翻轉邏輯。
-  const reverseFacing = selectedCharacter === "char19";
-  const shouldFlip = reverseFacing
-    ? player.facing === "right"
-    : player.facing === "left";
+  const shouldFlip = player.facing === "left";
   if (shouldFlip) {
     ctx.scale(-1, 1);
   }
@@ -817,8 +813,7 @@
       // 維持原本 240x240 的角色尺寸，只裁掉右側白線所在的區域。
       ctx.save();
       ctx.beginPath();
-      const cropX = selectedCharacter === "char19" && shouldFlip ? -12 : -120;
-      ctx.rect(cropX, -120, 132, 240);
+      ctx.rect(-120, -120, 132, 240);
       ctx.clip();
       ctx.drawImage(currentImg, -120, -120 + 8, 240, 240);
       ctx.restore();

@@ -30,5 +30,5 @@ if errorlevel 1 (
 
 echo.
 echo APK build, signing, and verification completed.
-echo Output: "%SCRIPT_DIR%..\downloads\Eco-Mario-1.0.3.apk"
+echo Output: "%SCRIPT_DIR%..\downloads\Eco-Mario-1.0.4.apk"
 exit /b 0

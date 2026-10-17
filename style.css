@@ -33,6 +33,10 @@ body {
     linear-gradient(145deg, #eff9df 0%, #d4efd5 48%, #a9dba9 100%);
 }
 
+@supports (height: 100dvh) {
+  body { min-height: 100dvh; }
+}
+
 button { font: inherit; }
 .hidden { display: none !important; }
 .quick-restart { position: absolute; top: 68px; right: 12px; z-index: 14; min-height: 40px; padding: 5px 9px; border: 1px solid rgba(164,192,142,0.65); border-radius: 999px; background: rgba(246,253,231,0.78); color: var(--forest-800); font-size: 0.65rem; cursor: pointer; touch-action: manipulation; }
@@ -245,7 +249,7 @@ kbd { display: inline-block; min-width: 23px; padding: 1px 6px; border: 1px soli
   display: grid;
   grid-template-columns: minmax(180px, 0.8fr) minmax(0, 1.6fr);
   gap: 12px;
-  width: min(800px, calc(100vw - 32px));
+  width: min(1000px, calc(100vw - 32px));
   margin-top: 14px;
 }
 .skill-button, .event-card {
@@ -276,7 +280,7 @@ kbd { display: inline-block; min-width: 23px; padding: 1px 6px; border: 1px soli
 
 .game-stage {
   position: relative;
-  width: min(800px, calc(100vw - 32px));
+  width: min(1000px, calc(100vw - 32px));
   aspect-ratio: 2 / 1;
   overflow: hidden;
   border: 5px solid rgba(255, 255, 255, 0.86);
@@ -476,8 +480,8 @@ body.rules-open { overflow: hidden; }
 .control-diagrams > div { padding: 14px 10px; border: 1px solid #dce8d7; border-radius: 14px; text-align: center; background: #f5f9f0; font-size: 0.85rem; }
 .control-diagrams strong, .control-diagrams span { display: block; margin-top: 8px; }
 .control-diagrams span { color: var(--muted); font-size: 0.75rem; }
-.game-broadcast { width: min(800px, calc(100vw - 32px)); margin: 0 0 12px; }
-.combo-summary { display: flex; justify-content: space-between; gap: 10px; width: min(800px, calc(100vw - 32px)); margin-bottom: 8px; color: var(--forest-800); font-size: 0.8rem; }
+.game-broadcast { width: min(1000px, calc(100vw - 32px)); margin: 0 0 10px; }
+.combo-summary { display: flex; justify-content: space-between; gap: 10px; width: min(1000px, calc(100vw - 32px)); margin-bottom: 6px; color: var(--forest-800); font-size: 0.78rem; }
 .combo-toast { position: absolute; z-index: 13; bottom: 12px; left: 50%; transform: translateX(-50%); width: max-content; max-width: 94%; padding: 8px 14px; border: 1px solid #c6ddb3; border-radius: 999px; background: rgba(250,255,239,0.95); color: #39613a; text-align: center; font-size: clamp(0.6rem, 1.5vw, 0.85rem); font-weight: 800; pointer-events: none; }
 .game-broadcast .event-card { min-height: 72px; box-shadow: none; }
 .event-card[data-event="scene"] { border-color: #aac894; background: #e8f4db; }
@@ -490,7 +494,7 @@ body.rules-open { overflow: hidden; }
 .skill-effect { grid-column: 1 / -1; font-size: 0.78rem; color: var(--muted); font-weight: 500; }
 .skill-button .skill-progress { grid-column: 1 / -1; width: 100%; height: 6px; border-radius: 999px; background: #d9e5d5; overflow: hidden; }
 .skill-button .skill-progress span { display: block; height: 100%; width: 100%; margin: 0; border-radius: inherit; background: #67aa72; transition: width 100ms linear; }
-.touch-controls { display: flex; justify-content: space-between; align-items: center; gap: 18px; width: min(800px, calc(100vw - 32px)); margin-top: 12px; touch-action: none; user-select: none; -webkit-user-select: none; }
+.touch-controls { display: flex; justify-content: space-between; align-items: center; gap: 18px; width: min(1000px, calc(100vw - 32px)); margin-top: 12px; touch-action: none; user-select: none; -webkit-user-select: none; }
 .touch-directions { display: flex; gap: 12px; }
 .touch-button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 72px; min-height: 68px; padding: 9px 14px; border: 2px solid #c4d9c3; border-radius: 18px; background: #f1f9e9; color: var(--forest-800); box-shadow: 0 4px 0 #c3d9ba; cursor: pointer; font-size: 1.5rem; font-weight: 850; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 .touch-button span { font-size: 0.72rem; }
@@ -592,6 +596,7 @@ body.rules-open { overflow: hidden; }
     height: 100vh; height: 100dvh;
     isolation: isolate; background: #d5e9c9;
   }
+  .game-page.ios-fullscreen { min-height: 100vh; min-height: 100dvh; }
   .game-page .game-stage { position: absolute; inset: 0; width: 100%; height: 100%; aspect-ratio: auto; border: 0; border-radius: 0; box-shadow: none; }
   .game-page #gameCanvas { width: 100%; height: 100%; object-fit: fill; }
   .game-page > .title-block { position: absolute; top: calc(50px + env(safe-area-inset-top)); left: 12px; margin: 0; z-index: 11; pointer-events: none; }

@@ -1133,22 +1133,26 @@
       if (document.fullscreenElement) {
         const exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen;
         if (exitFullscreen) await exitFullscreen.call(document);
+        gameView.classList.remove("fullscreen-mode", "ios-fullscreen");
       } else if (requestFullscreen) {
+        gameView.classList.add("fullscreen-mode");
         await requestFullscreen.call(document.documentElement);
-      } else if (touchDevice) {
-        gameView.classList.toggle("ios-fullscreen");
+      } else {
+        gameView.classList.toggle("fullscreen-mode");
+        gameView.classList.toggle("ios-fullscreen", gameView.classList.contains("fullscreen-mode"));
         window.scrollTo(0, 1);
       }
-      fullscreenBtn.textContent = gameView.classList.contains("ios-fullscreen") ? "⛶ 返回頁面" : "⛶ 全螢幕";
+      fullscreenBtn.textContent = gameView.classList.contains("fullscreen-mode") ? "⛶ 離開全螢幕" : "⛶ 全螢幕";
     } catch {
-      if (touchDevice) {
-        gameView.classList.add("ios-fullscreen");
-        window.scrollTo(0, 1);
-        fullscreenBtn.textContent = "⛶ 返回頁面";
-      } else fullscreenBtn.textContent = "目前使用滿版畫面";
+      gameView.classList.add("fullscreen-mode");
+      gameView.classList.toggle("ios-fullscreen", gameView.classList.contains("fullscreen-mode"));
+      if (touchDevice) window.scrollTo(0, 1);
+      fullscreenBtn.textContent = gameView.classList.contains("fullscreen-mode") ? "⛶ 離開全螢幕" : "⛶ 全螢幕";
     }
   });
   document.addEventListener("fullscreenchange", () => {
+    gameView.classList.toggle("fullscreen-mode", Boolean(document.fullscreenElement));
+    gameView.classList.toggle("ios-fullscreen", Boolean(document.fullscreenElement));
     fullscreenBtn.textContent = document.fullscreenElement ? "⛶ 離開全螢幕" : "⛶ 全螢幕";
   });
   resetWorld();

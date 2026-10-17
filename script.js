@@ -11,7 +11,6 @@
   const GROUND_Y = 340;
 
   // 💡 設定高分通關目標（可自行調整，例如 2000 分才能看到終點）
-  const WIN_SCORE = 2000;
   const RAINBOW_SCORE = 1000;
   const GAME_LIMIT_MS = 10 * 60 * 1000;
 
@@ -113,8 +112,8 @@
 
   const SCENES = [
     { id: "city", name: "🏙 繽紛城市", threshold: 0, surface: 0.75, ground: "#c5c4b3", soil: "#94704e", obstacleChance: 0.48, recycleChance: 0.68, spacing: 220, safeItems: [25, 27], dangerItems: [22, 23], obstacle: "chimney", hint: "穿越街道，回收紙箱與鋁罐。", rainbowX: 0.52 },
-    { id: "river", name: "🏞 山谷河岸", threshold: 600, surface: 0.80, ground: "#a7ce67", soil: "#be864e", obstacleChance: 0.38, recycleChance: 0.75, spacing: 250, safeItems: [26, 27], dangerItems: [21, 28], obstacle: "rock", hint: "高低石頭交錯：小石頭單跳，高石柱二段跳！", rainbowX: 0.50 },
-    { id: "forest", name: "🌳 陽光森林", threshold: 1200, surface: 0.79, ground: "#91bd58", soil: "#896747", obstacleChance: 0.43, recycleChance: 0.80, spacing: 240, safeItems: [25, 26], dangerItems: [21, 23], obstacle: "stump", hint: "深入森林，跳過樹樁並清理留下的垃圾。", rainbowX: 0.51 }
+    { id: "river", name: "🏞 山谷河岸", threshold: 2000, surface: 0.80, ground: "#a7ce67", soil: "#be864e", obstacleChance: 0.38, recycleChance: 0.75, spacing: 250, safeItems: [26, 27], dangerItems: [21, 28], obstacle: "rock", hint: "高低石頭交錯：小石頭單跳，高石柱二段跳！", rainbowX: 0.50 },
+    { id: "forest", name: "🌳 陽光森林", threshold: 3500, surface: 0.79, ground: "#91bd58", soil: "#896747", obstacleChance: 0.43, recycleChance: 0.80, spacing: 240, safeItems: [25, 26], dangerItems: [21, 23], obstacle: "stump", hint: "深入森林，跳過樹樁並清理留下的垃圾。", rainbowX: 0.51 }
   ];
   SCENES.forEach(scene => { scene.image = new Image(); scene.image.src = `assets/scenes/${scene.id}.png`; });
   const scenery = { index: 0, previous: 0, transition: 1200, rainbow: 0, riverGroups: 0, notice: 0, speedFactor: 1 };
@@ -153,7 +152,6 @@
     score: 0,
     lives: 3,
     lastGeneratedX: 400, // 記錄最後生成地圖物件的位置
-    finishFlagX: null,    // 達標時出現的終點線 X 座標
     obstacles: [],
     trashes: [],
     pickups: [],
@@ -250,7 +248,7 @@
     eventDescriptionEl.textContent = event ? event.description : sceneNotice ? scene.hint : (eventState.lastType ? "趁現在清理垃圾，準備下一波冒險。" : "準備迎接清潔隊補給！");
     eventCountdownEl.textContent = sceneNotice ? `速度 +${scenery.index * 5}%` : event ? `剩餘 ${Math.ceil(eventState.remaining / 1000)} 秒` : `${Math.max(0, Math.ceil((eventState.nextAt - gameTime) / 1000))} 秒後事件`;
     sceneNameEl.textContent = scene.name;
-    sceneHintEl.textContent = scene.hint + (world.score >= RAINBOW_SCORE ? " 🌈 彩虹已出現！" : ` 下一站：${SCENES[scenery.index + 1] ? SCENES[scenery.index + 1].threshold + " 分" : "2000 分終點"}`);
+    sceneHintEl.textContent = scene.hint + (world.score >= RAINBOW_SCORE ? " 🌈 彩虹已出現！" : ` 下一站：${SCENES[scenery.index + 1] ? SCENES[scenery.index + 1].threshold + " 分" : "持續挑戰高分"}`);
   }
 
   function updateScenery(dt) {
@@ -266,7 +264,7 @@
       world.trashes = world.trashes.filter(t => t.x < boundary);
       world.pickups = world.pickups.filter(p => p.x < boundary);
       world.lastGeneratedX = boundary;
-      if (world.finishFlagX === null) generateMapSegment(player.x + 1200);
+      generateMapSegment(player.x + 1200);
     }
     scenery.transition = Math.min(1200, scenery.transition + dt);
     const speedTarget = 1 + scenery.index * 0.05;
@@ -395,7 +393,6 @@
     world.score = 0;
     world.lives = 3;
     world.lastGeneratedX = 400;
-    world.finishFlagX = null;
     gameTime = 0;
     Object.assign(scenery, { index: 0, previous: 0, transition: 1200, rainbow: 0, riverGroups: 0, notice: 0, speedFactor: 1 });
     player.x = 100;
@@ -666,19 +663,8 @@
     player.x = Math.max(0, player.x); // 左邊不能超出 0，右邊可無限延伸
 
     // 💡 當玩家往前跑時，自動在前方 1200px 範圍持續生成地圖
-    if (player.x + 1200 > world.lastGeneratedX && world.finishFlagX === null) {
+    if (player.x + 1200 > world.lastGeneratedX) {
       generateMapSegment(player.x + 1200);
-    }
-
-    // 💡 檢查是否達到目標高分，達到時在前方生成終點
-    if (world.score >= WIN_SCORE && world.finishFlagX === null) {
-      world.finishFlagX = player.x + 800; // 在前方 800px 處設置終點旗桿
-    }
-
-    // 💡 碰觸到終點旗桿通關
-    if (world.finishFlagX !== null && player.x >= world.finishFlagX) {
-      endGame(`恭喜高分通關！成功達到 ${WIN_SCORE} 分拯救地球！`);
-      return;
     }
 
     player.vy += GRAVITY;
@@ -915,18 +901,6 @@
       ctx.beginPath(); ctx.ellipse(x + 30, GROUND_Y + 14, 9, 2, 0, 0, Math.PI * 2); ctx.fill();
     }
     ctx.restore();
-
-    // 💡 當達到設定高分時，才繪製終點旗桿
-    if (world.finishFlagX !== null) {
-      ctx.fillStyle = "#E74C3C";
-      ctx.fillRect(world.finishFlagX, GROUND_Y - 140, 10, 140);
-      ctx.beginPath();
-      ctx.moveTo(world.finishFlagX + 10, GROUND_Y - 140);
-      ctx.lineTo(world.finishFlagX + 60, GROUND_Y - 115);
-      ctx.lineTo(world.finishFlagX + 10, GROUND_Y - 90);
-      ctx.closePath();
-      ctx.fill();
-    }
 
     world.obstacles.forEach(drawObstacle);
 

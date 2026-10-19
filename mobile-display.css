@@ -131,3 +131,17 @@ html.ios-display body #gameView .hud {
 html.ios-display body #landingView .subtitle {
   display: block; margin: 4px 0 0; font-size: 0.72rem; line-height: 1.35;
 }
+html.ios-display .ios-home-fullscreen {
+  font: inherit; color: #245c3a; background: transparent; border: 0;
+  text-decoration: underline; padding: 2px 4px; cursor: pointer;
+}
+html.ios-display .ios-fullscreen-guide {
+  box-sizing: border-box; width: min(560px, calc(100% - 32px));
+  max-height: calc(var(--mobile-height, 100dvh) - 24px); overflow: auto;
+  border: 1px solid #acc5a2; border-radius: 18px; padding: 20px;
+  background: #f8fbed; color: #193f31; font: 16px/1.6 sans-serif;
+}
+html.ios-display .ios-fullscreen-guide::backdrop { background: rgba(15,35,23,.65); }
+html.ios-display .ios-fullscreen-guide h2 { font-size: 20px; margin: 0 0 12px; }
+html.ios-display .ios-fullscreen-guide li { margin-bottom: 10px; }
+html.ios-display .ios-fullscreen-guide button { min-height: 44px; padding: 8px 16px; border-radius: 12px; border: 1px solid #498458; background: #e1f0d8; color: #193f31; }

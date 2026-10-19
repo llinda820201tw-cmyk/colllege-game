@@ -116,3 +116,18 @@ html.mobile-display body #landingView .music-toggle { min-height: 44px; padding:
   html.mobile-display body #landingView .character-ability,
   html.mobile-display body #landingView .character-detail { font-size: 0.72rem; line-height: 1.3; }
 }
+/* iOS uses the visible viewport, including Safari toolbar changes and PWA launch. */
+html.ios-display { width: 100%; overflow: hidden; }
+html.ios-display body #gameView:not(.hidden) {
+  width: var(--mobile-width, 100vw);
+  height: var(--mobile-height, 100dvh);
+  max-height: none;
+}
+html.ios-display body #gameView .hud {
+  top: max(8px, env(safe-area-inset-top));
+  left: max(8px, env(safe-area-inset-left));
+  right: max(8px, env(safe-area-inset-right));
+}
+html.ios-display body #landingView .subtitle {
+  display: block; margin: 4px 0 0; font-size: 0.72rem; line-height: 1.35;
+}
